@@ -9,6 +9,7 @@ framerate = 10
 class SpaceRock():
     def __init__(self,m,p,v):
 
+        # Mass, Position and Velocity parameters initialized 
         self.mass = m
         self.position = p
         self.velocity = v
