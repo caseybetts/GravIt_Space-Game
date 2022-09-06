@@ -1,10 +1,16 @@
-# Make a rock
+# Game involving space rocks
+# By Casey Betts
+import pygame
+from pygame.locals import *
+from sys import exit
 import random
 import math
 
 #constants
 G = 6.6743e-11 # m3 kg-1 s-2
 framerate = 10
+winHeight = 400
+winWidth = 800
 
 class SpaceRock():
     def __init__(self,m,p,v):
@@ -43,21 +49,36 @@ class SpaceRock():
         self.position[1] += dist_y
 
 
-class Game_loop():
+class Game():
+    # Contains the loop for running the game
     def __init__(self, space_objects_input):
         self.rocks = space_objects_input
 
-    def run(self):
-        k = 0
+        # Initiallize pygame
+        pygame.init()
+        # Create a display window
+        screen = pygame.display.set_mode((winWidth,winHeight))
+        # Create a clock to control frames per second
+        self.clock = pygame.time.Clock()
 
-        while k < 5: # later replace with While True:
-            print("Iteration ", k)
+    def run(self):
+        # Contains the loop to render the game and exit on quit event
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.cleanup()
             j = 1
             for i in self.rocks:
                 i.move(self.rocks)
                 print(f"rock {j} is at ({i.position[0]},{i.position[1]})")
                 j += 1
-            k+=1
+            self.clock.tick(2)
+
+    def cleanup(self):
+        print("cleanup")
+        pygame.quit()
+        exit()
 
 
 
@@ -73,10 +94,7 @@ def make_rocks(num):
 
     return rocks
 
-
-
-
 if __name__ == "__main__":
     my_rocks = make_rocks(3)
-    game1 = Game_loop(my_rocks)
+    game1 = Game(my_rocks)
     game1.run()
