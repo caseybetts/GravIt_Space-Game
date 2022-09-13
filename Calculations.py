@@ -30,3 +30,18 @@ def displacement(group,target,framerate):
 
     # Return displacement in a tuple
     return (displacement_x, displacement_y)
+
+# Given a motion type returns a tuple of displacement
+def motion_tester(type):
+
+    # No motion
+    if type == 1:
+        return (0,0)
+    # Constant velocity to the right
+    elif type == 2:
+        return (5,0)
+    # Constant velocity down
+    elif type == 3:
+        return (0,5)
+    else:
+        print("Invalid motion type. Use 1, 2 or 3.")
