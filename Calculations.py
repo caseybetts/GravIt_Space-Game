@@ -2,6 +2,7 @@
 
 #Constants
 G = 6.6743e-11 # m3 kg-1 s-2
+little_g = -9.8 # m/s^2
 
 
 # This will take in a group of rocks and determin the displacement of a given rock
@@ -11,25 +12,40 @@ def displacement(group,target,framerate):
     total_force_y = 0
     # For each rock in the sprite group calculate the force on the target rock
     for rock in group:
-        if (target.position[0] - rock.position[0]) < 1 and (target.position[1] - rock.position[1]) < 1:
-            continue
-        # Calculate force in x direction by finding the distance in the x direction
-        distance_x = target.position[0] - rock.position[0]
-        force_x = (G*target.mass*rock.mass)/((distance_x)**2) # N (force)
-        # Calculate force in x direction by finding the distance in the y direction
-        distance_y = target.position[1] - rock.position[1]
-        force_y = (G*target.mass*rock.mass)/((distance_y)**2) # N (force)
+
+        # Find the distance in each direction
+        distance_x = target.rect[0] - rock.rect[0]
+        distance_y = target.rect[1] - rock.rect[1]
+
+        # Calculate force in x direction
+        if distance_x < -2:
+            force_x = (-1)*(G*target.mass*rock.mass)/((distance_x)**2) # N (force)
+        elif distance_x > 2:
+            force_x = (G*target.mass*rock.mass)/((distance_x)**2) # N (force)
+        else:
+            force_x = 0
+
+        # Calculate force in y direction
+        if distance_y < -2:
+            force_y = (-1)*(G*target.mass*rock.mass)/((distance_y)**2) # N (force)
+        elif distance_y > 2:
+            force_y = (G*target.mass*rock.mass)/((distance_y)**2) # N (force)
+        else:
+            force_y = 0
+
         # Add object force to total force
         total_force_x += force_x
         total_force_y += force_y
-    # Calculate the displacement of the tartet rock
-    # Calculate displacement in X
+    # Calculate the displacement of the tartet rock in each direction
     displacement_x = (((1/framerate)**2)*(total_force_x/target.mass)*(.5)) + target.velocity[0]*(1/framerate)
-    # Calculate displacement in y
     displacement_y = (((1/framerate)**2)*(total_force_y/target.mass)*(.5)) + target.velocity[1]*(1/framerate)
 
     # Return displacement in a tuple
     return (displacement_x, displacement_y)
+
+# Define a function for calculating change in velocity
+def acceleration():
+    pass
 
 # Given a motion type returns a tuple of displacement
 def motion_tester(type):
@@ -45,3 +61,15 @@ def motion_tester(type):
         return (0,5)
     else:
         print("Invalid motion type. Use 1, 2 or 3.")
+
+
+def pickle_ball(target,winHeight):
+
+    # Update velocity
+    target.velocity[1] -= little_g
+
+    if target.rect.bottom >= winHeight:
+        target.velocity[1] = -1*(target.velocity[1]+1)
+
+    # Update position
+    target.rect.move_ip(target.velocity[0], target.velocity[1])

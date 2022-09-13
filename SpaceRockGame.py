@@ -5,7 +5,7 @@ from pygame.locals import *
 from sys import exit
 import random
 import math
-from Calculations import displacement
+from Calculations import displacement, motion_tester, pickle_ball
 
 #constants
 framerate = 10
@@ -18,26 +18,28 @@ pygame.init()
 
 # Create a class for the space rocks extending pygame sprite class
 class SpaceRock(pygame.sprite.Sprite):
-    def __init__(self,m,p,v):
+    def __init__(self,mass,position,velocity):
         super(SpaceRock,self).__init__()
 
         # Mass, Position and Velocity parameters initialized
-        self.mass = m
-        self.position = p
-        self.velocity = v
+        self.mass = mass
+        self.velocity = velocity
 
         if pygame.get_init():
             self.surface = pygame.Surface((10,10))
             self.surface.fill("Red")
-            self.rect = self.surface.get_rect()
+            self.rect = self.surface.get_rect( center = (position[0],position[1]) )
         else:
             print("pygame is not initialized")
 
     def update(self):
         # Find the displacement in position
-        dist = displacement(rocks, self, framerate)
+        #dist = displacement(rocks, self, framerate)
+        ##### Testing
+        #dist = motion_tester(1)
         # Update position
-        self.rect.move_ip(dist[0],dist[1])
+        #self.rect.move_ip(dist[0]+self.velocity[0],dist[1]+self.velocity[1])
+        pickle_ball(self,winHeight)
 
 class Game():
     # Contains the loop for running the game
@@ -49,8 +51,6 @@ class Game():
 
     def run(self):
         # Contains the loop to render the game and exit on quit event
-        print("is pygame init? ", pygame.get_init())
-
 
         while True:
             for event in pygame.event.get():
@@ -69,13 +69,7 @@ class Game():
             for entity in rocks:
                 self.screen.blit(entity.surface, entity.rect)
 
-            # for i in range(number_of_rocks):
-            #     print(f"rock {i}")
-            #     self.rocks[i].move(self.rocks)
-            #     print(int(self.rocks[i].position[0]), "and",int(self.rocks[i].position[1]) )
-                #self.screen.blit(self.rocks[i].surface,(int(self.rocks[i].position[0]),int(self.rocks[i].position[1])))
-
-            self.clock.tick(10)
+            self.clock.tick(15)
 
             pygame.display.flip()
 
@@ -87,9 +81,11 @@ class Game():
 def make_random_rock():
     # returns a space rock of random mass and position
     rand_rock = SpaceRock(
-                    random.randint(1,10)*10000000000000000,
-                    [random.randint(1,10)*winWidth,random.randint(1,10)*winHeight],
-                    [10-random.randint(1,10)*20,10-random.randint(1,10)*20]
+                    100000000000000000,
+                    #random.randint(1,100)*1000000000000000,
+                    [winWidth/2 + random.randint(-winWidth/2,winWidth/2),winHeight/2 + random.randint(-winHeight/2,winHeight/2)],
+                    [0,0]
+                    #[10-random.randint(1,2),10-random.randint(1,2)]
                     )
     return rand_rock
 
@@ -102,7 +98,15 @@ def make_random_rocks(num):
 
 if __name__ == "__main__":
     # Create the rocks and add them to a sprite group
-    rocks = make_random_rocks(3)
+    rocks = make_random_rocks(2)
+
+    ############ testing
+    for rock in rocks:
+        pass
+        #print(f"Mass: {rock.mass}\nPosition: {rock.position}\nVelocity: {rock.velocity}")
+        #print(rock.rect)
+    ##############
+
     # Create game object and run
     game1 = Game()
     game1.run()
