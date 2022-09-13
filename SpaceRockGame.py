@@ -39,10 +39,6 @@ class SpaceRock(pygame.sprite.Sprite):
         # Update position
         self.rect.move_ip(dist[0],dist[1])
 
-
-# Create a sprite group to contain the space rocks
-rocks = pygame.sprite.Group()
-
 class Game():
     # Contains the loop for running the game
     def __init__(self):
@@ -88,30 +84,25 @@ class Game():
         exit()
         print("cleanup complete")
 
-# returns a list of space rock objects
-def make_rocks(num):
-    # Creating a host of space rocks of random size and posititon
-    rocks = []
-    for i in range(num):
-        rocks.append(
-            SpaceRock(
-                random.randint(1,10)*10000000000000000,
-                [random.randint(1,10)*winWidth,random.randint(1,10)*winHeight],
-                [10-random.randint(1,10)*20,10-random.randint(1,10)*20]
-                )
-            )
-    # Printing out the rock's size and position
-    # for i in range(num):
-    #     print(f"The mass of space rock {i} is {rocks[i].mass}")
-    #     print(f"The position of space rock {i} is {rocks[i].position}")
+def make_random_rock():
+    # returns a space rock of random mass and position
+    rand_rock = SpaceRock(
+                    random.randint(1,10)*10000000000000000,
+                    [random.randint(1,10)*winWidth,random.randint(1,10)*winHeight],
+                    [10-random.randint(1,10)*20,10-random.randint(1,10)*20]
+                    )
+    return rand_rock
 
-    return rocks
+def make_random_rocks(num):
+    # Create a sprite group to contain random space rocks
+    sprite_group = pygame.sprite.Group()
+    for i in range(num):
+        sprite_group.add(make_random_rock())
+    return sprite_group
 
 if __name__ == "__main__":
     # Create the rocks and add them to a sprite group
-    rock_list = make_rocks(number_of_rocks)
-    for rock in rock_list:
-        rocks.add(rock)
+    rocks = make_random_rocks(3)
     # Create game object and run
     game1 = Game()
     game1.run()
