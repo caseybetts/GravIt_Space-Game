@@ -1,7 +1,8 @@
 # This file holds all the calculation functions for the game
+from math import sqrt, sin, cos, atan, fabs
 
 #Constants
-G = 6.6743e-11 # m3 kg-1 s-2
+G = 6.6743e-1 # m3 kg-1 s-2
 little_g = -9.8 # m/s^2
 
 
@@ -44,8 +45,54 @@ def displacement(group,target,framerate):
     return (displacement_x, displacement_y)
 
 # Define a function for calculating change in velocity
-def acceleration():
-    pass
+def find_force(sprite_group, ID):
+    sprites = sprite_group.sprites()
+    num = len(sprites)
+    total_force_x = 0
+    total_force_y = 0
+    target = sprites[0]
+
+    for i in range(num):
+        # remove target sprite from the list; save to variable
+        if sprites[i].id == ID:
+            target = sprites.pop(i)
+            break
+
+    for sprite in sprites:
+        # Calcualate delta x and y
+        distance_x = sprite.rect[0] - target.rect[0]
+        distance_y = sprite.rect[1] - target.rect[1]
+        # Calculate distance
+        total_distance = sqrt((distance_x**2) + (distance_y**2) )
+        print(target.id, "dist: ", total_distance)
+        if distance_x > 1 or distance_x < -1:
+            angle = atan(distance_y/distance_x)
+        else:
+            angle = 0
+        # Calculate total force
+        if total_distance > 40:
+            total_force = (G*target.mass*sprite.mass)/(total_distance**2) # N (force)
+        else:
+            total_force = (G*target.mass*sprite.mass)/(40**2) # N (force)
+
+        # Calculate force in x direction
+        if distance_x < 0:
+            force_x = -total_force*fabs(cos(angle))
+        else:
+            force_x = total_force*fabs(cos(angle))
+
+        # Calculate force in y direction
+        if distance_y < 0:
+            force_y = -total_force*fabs(sin(angle))
+        else:
+            force_y = total_force*fabs(sin(angle))
+
+        print(target.id, f"Force: ({force_x},{force_y})")
+        # Add object force to total force
+        total_force_x += force_x
+        total_force_y += force_y
+
+    return [total_force_x, total_force_y]
 
 # Given a motion type returns a tuple of displacement
 def motion_tester(type):
