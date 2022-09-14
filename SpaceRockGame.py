@@ -8,10 +8,11 @@ import math
 from Calculations import displacement, motion_tester, pickle_ball, find_force
 
 #constants
-framerate = 6
-winHeight = 400
-winWidth = 800
-number_of_rocks = 2
+framerate = 30
+winHeight = 800
+winWidth = 1200
+number_of_rocks = 100
+MASSES = (100000, 500000, 2000000)
 
 pygame.init()
 
@@ -26,20 +27,30 @@ class SpaceRock(pygame.sprite.Sprite):
         self.velocity = velocity
         self.id = id
 
-        if pygame.get_init():
-            self.surface = pygame.Surface((10,10))
-            self.surface.fill("Red")
-            self.rect = self.surface.get_rect( center = (position[0],position[1]) )
+        # Choose metor size based on mass
+        if mass == min(MASSES):
+            image = "Graphics/meteorBrown_tiny1.png"
+            size = (10,10)
+        elif mass == max(MASSES):
+            image = "Graphics/meteorBrown_med3.png"
+            size = (40,40)
         else:
-            print("pygame is not initialized")
+            image = "Graphics/meteorBrown_big2.png"
+            size = (20,20)
+        # Create pygame Surface
+        self.surface = pygame.image.load(image)
+        self.surface = pygame.transform.scale(self.surface, size)
+        self.surface.set_colorkey((0,0,0), RLEACCEL)
+        self.rect = self.surface.get_rect( center = (position[0],position[1]) )
+
 
     def update(self):
         # Calculate force on object
         force = find_force(rocks, self.id)
         # print(self.id, "Force ", force)
         # Update acceleration
-        acceleration_x = force[0]/self.mass
-        acceleration_y = force[1]/self.mass
+        acceleration_x = force[0]/(self.mass*framerate*framerate)
+        acceleration_y = force[1]/(self.mass*framerate*framerate)
         # print(self.id, "Acceleration :", acceleration_x, ", ", acceleration_y)
         # Update object's velocity
         self.velocity[0] += acceleration_x
@@ -48,14 +59,6 @@ class SpaceRock(pygame.sprite.Sprite):
         self.rect.move_ip(self.velocity[0],self.velocity[1])
         # print(self.id, " Position: ", self.rect[0]," , ",self.rect[1] )
 
-##################
-        #dist = displacement(rocks, self, framerate)
-        ##### Testing
-        #dist = motion_tester(1)
-        # Update position
-        #self.rect.move_ip(dist[0]+self.velocity[0],dist[1]+self.velocity[1])
-        #pickle_ball(self,winHeight)
-
 class Game():
     # Contains the loop for running the game
     def __init__(self):
@@ -63,9 +66,6 @@ class Game():
         self.screen = pygame.display.set_mode((winWidth,winHeight))
         # Create a clock to control frames per second
         self.clock = pygame.time.Clock()
-        # Recolor rock 1
-        for rock in rocks:
-            if rock.id == 1: rock.surface.fill("Blue")
 
     def run(self):
         # Contains the loop to render the game and exit on quit event
@@ -98,7 +98,7 @@ class Game():
 
 def make_random_rock(ID):
     # returns a space rock of random mass and position
-    mass = 5000#random.randint(5,10)*5000 #random.randint(5,10)*1000000000000000
+    mass = random.choice(MASSES) #random.randint(5,10)*1000000000000000
     x_position = winWidth/2 + random.randint(-winWidth/4,winWidth/4)
     y_position = winHeight/2 + random.randint(-winHeight/4,winHeight/4) #[10-random.randint(1,2),10-random.randint(1,2)]
     x_velocity = random.randint(-5,5)
@@ -116,17 +116,6 @@ def make_random_rocks(num):
 if __name__ == "__main__":
     # Create the rocks and add them to a sprite group
     rocks = make_random_rocks(number_of_rocks)
-
-    myTarget = rocks.sprites()[1]
-    print(rocks.sprites())
-    print(myTarget)
-    ############ testing
-    for rock in rocks:
-        pass
-        #print(f"Mass: {rock.mass}\nPosition: {rock.position}\nVelocity: {rock.velocity}")
-        #print(rock.rect)
-    ##############
-
     # Create game object and run
     game1 = Game()
     game1.run()
