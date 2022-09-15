@@ -12,12 +12,11 @@ def find_force(sprite_group, xcoord, ycoord, mass, ID):
     total_force_x = 0
     total_force_y = 0
 
-    if ID != 0:
-        for i in range(num):
-            # remove target sprite from the list; save to variable
-            if sprites[i].id == ID:
-                sprites.pop(i)
-                break
+    for i in range(num):
+        # remove target sprite from the list; save to variable
+        if sprites[i].id == ID:
+            sprites.pop(i)
+            break
 
     for sprite in sprites:
         # Calcualate delta x and y

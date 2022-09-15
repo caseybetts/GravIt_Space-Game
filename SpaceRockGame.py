@@ -26,7 +26,7 @@ from pygame.locals import (
 framerate = 30
 winHeight = 800
 winWidth = 1200
-number_of_rocks = 5
+number_of_rocks = 50
 thrust_acc = 10000
 MASSES = (100000, 500000, 2000000)
 
@@ -60,9 +60,9 @@ class SpaceRock(pygame.sprite.Sprite):
         self.rect = self.surface.get_rect( center = (position[0],position[1]) )
 
 
-    def update(self):
+    def update(self, pressed_keys):
         # Calculate force on object
-        force = find_force(rocks, self.rect[0], self.rect[1], self.mass, self.id)
+        force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
         # print(self.id, "Force ", force)
         # Update acceleration
         acceleration_x = force[0]/(self.mass*framerate*framerate)
@@ -74,6 +74,16 @@ class SpaceRock(pygame.sprite.Sprite):
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
+        # Keep sprite within the boudary
+        if self.rect.left < boundary.left:
+            self.velocity[0] = -self.velocity[0]*.8
+        if self.rect.right > boundary.right:
+            self.velocity[0] = -self.velocity[0]*.8
+        if self.rect.top <= boundary.top:
+            self.velocity[1] = -self.velocity[1]*.8
+        if self.rect.bottom >= boundary.bottom:
+            self.velocity[1] = -self.velocity[1]*.8
+
 class Player(pygame.sprite.Sprite):
     """This is the player sprite"""
     def __init__(self):
@@ -83,6 +93,7 @@ class Player(pygame.sprite.Sprite):
         self.mass = 1000
         self.velocity = [0,0]
         self.size = (20,20)
+        self.id = 0
         # Create pygame Surface
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
         self.surface = pygame.transform.scale(self.surface, self.size)
@@ -111,7 +122,7 @@ class Player(pygame.sprite.Sprite):
             print("Mass: ", self.mass)
 
         # Calculate force on object
-        force = find_force(rocks, self.rect[0], self.rect[1], self.mass, 0)
+        force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
         # print(self.id, "Force ", force)
         # Update acceleration
         acceleration_x = (force[0]+x_thrust)/(self.mass*framerate*framerate)
@@ -133,6 +144,12 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom >= winHeight:
             self.velocity[1] = -1
 
+class OuterBoudary():
+    def __init__(self,left,right,top,bottom):
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
 
 
 class Game():
@@ -160,12 +177,10 @@ class Game():
             # Get the set of keys pressed and check for user input
             pressed_keys = pygame.key.get_pressed()
 
-            # Update sprite positions
-            blob.update(pressed_keys)
+            # Update player position
+            all_sprites.update(pressed_keys)
             self.screen.blit(blob.surface, blob.rect)
-            rocks.update()
-
-            # Draw all sprites
+            # Update space rock positions
             for entity in rocks:
                 self.screen.blit(entity.surface, entity.rect)
 
@@ -200,6 +215,11 @@ if __name__ == "__main__":
     rocks = make_random_rocks(number_of_rocks)
     # Create the player sprite
     blob = Player()
+    # Sprite group for all sprites
+    all_sprites = rocks
+    all_sprites.add(blob)
+    # Create rock boundary
+    boundary = OuterBoudary(-winWidth,2*winWidth,-winHeight,2*winHeight)
     # Create game object and run
     game1 = Game()
     game1.run()
