@@ -1,17 +1,33 @@
 # Game involving space rocks
 # By Casey Betts
+
+# mustard sun by Martin Cee (softmartin) (c) copyright 2022 Licensed under a Creative Commons Attribution Noncommercial  (3.0) license. http://dig.ccmixter.org/files/softmartin/65383 Ft: subliminal
+
 import pygame
 from pygame.locals import *
 from sys import exit
 import random
 import math
-from Calculations import displacement, motion_tester, pickle_ball, find_force
+from Calculations import find_force
+
+# Import pygame.locals for easier access to key coordinates
+from pygame.locals import (
+    RLEACCEL,
+    K_UP,
+    K_DOWN,
+    K_LEFT,
+    K_RIGHT,
+    K_ESCAPE,
+    KEYDOWN,
+    QUIT,
+)
 
 #constants
 framerate = 30
 winHeight = 800
 winWidth = 1200
-number_of_rocks = 100
+number_of_rocks = 5
+thrust_acc = 10000
 MASSES = (100000, 500000, 2000000)
 
 pygame.init()
@@ -46,7 +62,7 @@ class SpaceRock(pygame.sprite.Sprite):
 
     def update(self):
         # Calculate force on object
-        force = find_force(rocks, self.id)
+        force = find_force(rocks, self.rect[0], self.rect[1], self.mass, self.id)
         # print(self.id, "Force ", force)
         # Update acceleration
         acceleration_x = force[0]/(self.mass*framerate*framerate)
@@ -57,7 +73,67 @@ class SpaceRock(pygame.sprite.Sprite):
         self.velocity[1] += acceleration_y
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
-        # print(self.id, " Position: ", self.rect[0]," , ",self.rect[1] )
+
+class Player(pygame.sprite.Sprite):
+    """This is the player sprite"""
+    def __init__(self):
+        super(Player,self).__init__()
+
+        # Mass, Position and Velocity parameters initialized
+        self.mass = 1000
+        self.velocity = [0,0]
+        self.size = (20,20)
+        # Create pygame Surface
+        self.surface = pygame.image.load("Graphics/GreenBlob.png")
+        self.surface = pygame.transform.scale(self.surface, self.size)
+        self.surface.set_colorkey((0,0,0), RLEACCEL)
+        self.rect = self.surface.get_rect( center = (winWidth/2,winHeight/2) )
+
+    # Move the sprite based on user keypresses
+    def update(self, pressed_keys):
+        x_thrust = 0
+        y_thrust = 0
+        if pressed_keys[K_UP]:
+            y_thrust = -(self.mass*.01)*thrust_acc      # ejection mass x acceleration
+            self.mass *= .99
+            print("Mass: ", self.mass)
+        if pressed_keys[K_DOWN]:
+            y_thrust = (self.mass*.01)*thrust_acc       # ejection mass x acceleration
+            self.mass *= .99
+            print("Mass: ", self.mass)
+        if pressed_keys[K_LEFT]:
+            x_thrust = -(self.mass*.01)*thrust_acc       # ejection mass x acceleration
+            self.mass *= .99
+            print("Mass: ", self.mass)
+        if pressed_keys[K_RIGHT]:
+            x_thrust = (self.mass*.01)*thrust_acc       # ejection mass x acceleration
+            self.mass *= .99
+            print("Mass: ", self.mass)
+
+        # Calculate force on object
+        force = find_force(rocks, self.rect[0], self.rect[1], self.mass, 0)
+        # print(self.id, "Force ", force)
+        # Update acceleration
+        acceleration_x = (force[0]+x_thrust)/(self.mass*framerate*framerate)
+        acceleration_y = (force[1]+y_thrust)/(self.mass*framerate*framerate)
+        # print(self.id, "Acceleration :", acceleration_x, ", ", acceleration_y)
+        # Update object's velocity
+        self.velocity[0] += acceleration_x
+        self.velocity[1] += acceleration_y
+        # Find the displacement in position
+        self.rect.move_ip(self.velocity[0],self.velocity[1])
+
+        # Keep player on the screen
+        if self.rect.left < 0:
+            self.velocity[0] = 1
+        if self.rect.right > winWidth:
+            self.velocity[0] = -1
+        if self.rect.top <= 0:
+            self.velocity[1] = 1
+        if self.rect.bottom >= winHeight:
+            self.velocity[1] = -1
+
+
 
 class Game():
     # Contains the loop for running the game
@@ -77,10 +153,16 @@ class Game():
                         self.cleanup()
                 elif event.type == pygame.QUIT:
                     self.cleanup()
-            # White background
-            self.screen.fill('White')
 
-            # Update rock positions
+            # White background
+            self.screen.fill('Black')
+
+            # Get the set of keys pressed and check for user input
+            pressed_keys = pygame.key.get_pressed()
+
+            # Update sprite positions
+            blob.update(pressed_keys)
+            self.screen.blit(blob.surface, blob.rect)
             rocks.update()
 
             # Draw all sprites
@@ -109,13 +191,15 @@ def make_random_rock(ID):
 def make_random_rocks(num):
     # Create a sprite group to contain random space rocks
     sprite_group = pygame.sprite.Group()
-    for i in range(num):
+    for i in range(1,num):
         sprite_group.add(make_random_rock(i))
     return sprite_group
 
 if __name__ == "__main__":
     # Create the rocks and add them to a sprite group
     rocks = make_random_rocks(number_of_rocks)
+    # Create the player sprite
+    blob = Player()
     # Create game object and run
     game1 = Game()
     game1.run()
