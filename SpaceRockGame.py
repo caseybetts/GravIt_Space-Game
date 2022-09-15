@@ -24,8 +24,8 @@ from pygame.locals import (
 
 #constants
 framerate = 30
-winHeight = 800
-winWidth = 1200
+winHeight = 1000
+winWidth = 1600
 number_of_rocks = 50
 thrust_acc = 10000
 MASSES = (100000, 500000, 2000000)
@@ -107,19 +107,15 @@ class Player(pygame.sprite.Sprite):
         if pressed_keys[K_UP]:
             y_thrust = -(self.mass*.01)*thrust_acc      # ejection mass x acceleration
             self.mass *= .99
-            print("Mass: ", self.mass)
         if pressed_keys[K_DOWN]:
             y_thrust = (self.mass*.01)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
-            print("Mass: ", self.mass)
         if pressed_keys[K_LEFT]:
             x_thrust = -(self.mass*.01)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
-            print("Mass: ", self.mass)
         if pressed_keys[K_RIGHT]:
             x_thrust = (self.mass*.01)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
-            print("Mass: ", self.mass)
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
@@ -151,6 +147,25 @@ class OuterBoudary():
         self.top = top
         self.bottom = bottom
 
+class _Setup():
+    "Provides functions needed to set up the game"
+
+    def make_random_rock(self, ID):
+        # returns a space rock of random mass and position
+        mass = random.choice(MASSES) #random.randint(5,10)*1000000000000000
+        x_position = random.randint(boundary.left,boundary.right)
+        y_position = random.randint(boundary.top, boundary.bottom) #[10-random.randint(1,2),10-random.randint(1,2)]
+        x_velocity = random.randint(-5,5)
+        y_velocity = random.randint(-5,5)
+        rand_rock = SpaceRock( mass, [x_position, y_position], [x_velocity,y_velocity], ID )
+        return rand_rock
+
+    def make_random_rocks(self, num):
+        # Create a sprite group to contain random space rocks
+        sprite_group = pygame.sprite.Group()
+        for i in range(1,num):
+            sprite_group.add(self.make_random_rock(i))
+        return sprite_group
 
 class Game():
     # Contains the loop for running the game
@@ -159,6 +174,8 @@ class Game():
         self.screen = pygame.display.set_mode((winWidth,winHeight))
         # Create a clock to control frames per second
         self.clock = pygame.time.Clock()
+        # Font
+        self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
 
     def run(self):
         # Contains the loop to render the game and exit on quit event
@@ -184,6 +201,11 @@ class Game():
             for entity in rocks:
                 self.screen.blit(entity.surface, entity.rect)
 
+            # Display the current mass of the player
+
+            mass_text_surf = self.font.render(f'Current Mass: {math.trunc(blob.mass)} kg', False, (64,64,64))
+            self.screen.blit(mass_text_surf,(10,10))
+
             self.clock.tick(framerate)
 
             pygame.display.flip()
@@ -193,33 +215,18 @@ class Game():
         exit()
         print("cleanup complete")
 
-def make_random_rock(ID):
-    # returns a space rock of random mass and position
-    mass = random.choice(MASSES) #random.randint(5,10)*1000000000000000
-    x_position = winWidth/2 + random.randint(-winWidth/4,winWidth/4)
-    y_position = winHeight/2 + random.randint(-winHeight/4,winHeight/4) #[10-random.randint(1,2),10-random.randint(1,2)]
-    x_velocity = random.randint(-5,5)
-    y_velocity = random.randint(-5,5)
-    rand_rock = SpaceRock( mass, [x_position, y_position], [x_velocity,y_velocity], ID )
-    return rand_rock
-
-def make_random_rocks(num):
-    # Create a sprite group to contain random space rocks
-    sprite_group = pygame.sprite.Group()
-    for i in range(1,num):
-        sprite_group.add(make_random_rock(i))
-    return sprite_group
-
 if __name__ == "__main__":
+    # Create rock boundary
+    boundary = OuterBoudary(-winWidth,2*winWidth,-winHeight,2*winHeight)
     # Create the rocks and add them to a sprite group
-    rocks = make_random_rocks(number_of_rocks)
+    setup = _Setup()
+    rocks = setup.make_random_rocks(number_of_rocks)
     # Create the player sprite
     blob = Player()
     # Sprite group for all sprites
     all_sprites = rocks
     all_sprites.add(blob)
-    # Create rock boundary
-    boundary = OuterBoudary(-winWidth,2*winWidth,-winHeight,2*winHeight)
+
     # Create game object and run
     game1 = Game()
     game1.run()
