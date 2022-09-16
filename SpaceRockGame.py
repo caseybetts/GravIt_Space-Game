@@ -26,8 +26,14 @@ from pygame.locals import (
 framerate = 30
 winHeight = 1000
 winWidth = 1600
+player_start_mass = 1000
+player_start_velocity = [0,0]
+player_start_size = [20,20]
 number_of_rocks = 50
-thrust_acc = 10000
+helper_force = 5000
+thrust_acc = 100000
+percent_ejection = .001
+rebound_velocity = 2
 MASSES = (100000, 500000, 2000000)
 
 pygame.init()
@@ -60,10 +66,21 @@ class SpaceRock(pygame.sprite.Sprite):
         self.rect = self.surface.get_rect( center = (position[0],position[1]) )
 
 
-    def update(self, pressed_keys):
+    def update(self):
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
         # print(self.id, "Force ", force)
+        # Give the rocks a little force to keep them from clustering at the edges
+        if self.rect[0] < 0:
+            force[0]+= helper_force
+        elif self.rect[0] > winWidth:
+            force[0]-= helper_force
+
+        if self.rect[1] < 0:
+            force[1]+= helper_force
+        elif self.rect[1] > winHeight:
+            force[1]-= helper_force
+
         # Update acceleration
         acceleration_x = force[0]/(self.mass*framerate*framerate)
         acceleration_y = force[1]/(self.mass*framerate*framerate)
@@ -76,13 +93,13 @@ class SpaceRock(pygame.sprite.Sprite):
 
         # Keep sprite within the boudary
         if self.rect.left < boundary.left:
-            self.velocity[0] = -self.velocity[0]*.8
+            self.velocity[0] = rebound_velocity
         if self.rect.right > boundary.right:
-            self.velocity[0] = -self.velocity[0]*.8
+            self.velocity[0] = -rebound_velocity
         if self.rect.top <= boundary.top:
-            self.velocity[1] = -self.velocity[1]*.8
+            self.velocity[1] = rebound_velocity
         if self.rect.bottom >= boundary.bottom:
-            self.velocity[1] = -self.velocity[1]*.8
+            self.velocity[1] = -rebound_velocity
 
 class Player(pygame.sprite.Sprite):
     """This is the player sprite"""
@@ -90,9 +107,9 @@ class Player(pygame.sprite.Sprite):
         super(Player,self).__init__()
 
         # Mass, Position and Velocity parameters initialized
-        self.mass = 1000
-        self.velocity = [0,0]
-        self.size = (20,20)
+        self.mass = player_start_mass
+        self.velocity = player_start_velocity
+        self.size = player_start_size
         self.id = 0
         # Create pygame Surface
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
@@ -105,16 +122,16 @@ class Player(pygame.sprite.Sprite):
         x_thrust = 0
         y_thrust = 0
         if pressed_keys[K_UP]:
-            y_thrust = -(self.mass*.01)*thrust_acc      # ejection mass x acceleration
+            y_thrust = -(self.mass*percent_ejection)*thrust_acc      # ejection mass x acceleration
             self.mass *= .99
         if pressed_keys[K_DOWN]:
-            y_thrust = (self.mass*.01)*thrust_acc       # ejection mass x acceleration
+            y_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
         if pressed_keys[K_LEFT]:
-            x_thrust = -(self.mass*.01)*thrust_acc       # ejection mass x acceleration
+            x_thrust = -(self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
         if pressed_keys[K_RIGHT]:
-            x_thrust = (self.mass*.01)*thrust_acc       # ejection mass x acceleration
+            x_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
 
         # Calculate force on object
@@ -176,6 +193,8 @@ class Game():
         self.clock = pygame.time.Clock()
         # Font
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
+        # Create variable to store the number of rocks remaining
+        self.remaining_rocks = len(rocks.sprites())
 
     def run(self):
         # Contains the loop to render the game and exit on quit event
@@ -194,16 +213,31 @@ class Game():
             # Get the set of keys pressed and check for user input
             pressed_keys = pygame.key.get_pressed()
 
+            # Check if any space rocks have collided with the player
+            collision = pygame.sprite.spritecollide(blob,rocks, True)
+
+            if collision:
+                # If so, then kill the space rock and add the rock's mass to the player mass
+                print( collision[0].mass )
+                blob.mass += collision[0].mass
+                #collision[0].kill()
+                self.remaining_rocks = len(rocks.sprites())
+
             # Update player position
-            all_sprites.update(pressed_keys)
+            blob.update(pressed_keys)
             self.screen.blit(blob.surface, blob.rect)
             # Update space rock positions
+            rocks.update()
             for entity in rocks:
                 self.screen.blit(entity.surface, entity.rect)
 
-            # Display the current mass of the player
+            # End the game when all space rocks are gone
+            if not rocks.sprites(): self.cleanup()
 
-            mass_text_surf = self.font.render(f'Current Mass: {math.trunc(blob.mass)} kg', False, (64,64,64))
+            # Display the current mass of the player
+            mass_text_surf = self.font.render(
+                f'Current Mass: {math.trunc(blob.mass)} kg              Space Rocks Remaining: {self.remaining_rocks}',
+                False, (64,64,64))
             self.screen.blit(mass_text_surf,(10,10))
 
             self.clock.tick(framerate)
@@ -218,14 +252,20 @@ class Game():
 if __name__ == "__main__":
     # Create rock boundary
     boundary = OuterBoudary(-winWidth,2*winWidth,-winHeight,2*winHeight)
+    # boundary = OuterBoudary(0,winWidth,0,winHeight)
     # Create the rocks and add them to a sprite group
     setup = _Setup()
     rocks = setup.make_random_rocks(number_of_rocks)
     # Create the player sprite
     blob = Player()
     # Sprite group for all sprites
-    all_sprites = rocks
+    all_sprites = pygame.sprite.Group()
+    for rock in rocks:
+        all_sprites.add(rock)
     all_sprites.add(blob)
+    # Sprite group just for the player
+    player_group = pygame.sprite.Group()
+    player_group.add(blob)
 
     # Create game object and run
     game1 = Game()
