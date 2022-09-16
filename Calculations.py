@@ -79,3 +79,16 @@ def pickle_ball(target,winHeight):
 
     # Update position
     target.rect.move_ip(target.velocity[0], target.velocity[1])
+
+
+def radar_coord_conversion(map_x, map_y, reduction_factor, radar_left, radar_top, map_left, map_top):
+    # Function will convert the actual x and y coordinates for coordinates on the rador screen
+    radar_x = map_x - map_left
+    radar_x *= reduction_factor
+    radar_x += radar_left
+
+    radar_y = map_y - map_top
+    radar_y *= reduction_factor
+    radar_y += radar_top
+
+    return [radar_x, radar_y]
