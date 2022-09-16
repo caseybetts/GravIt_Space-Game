@@ -23,17 +23,18 @@ from pygame.locals import (
 )
 
 #constants
+number_of_rocks = 60
 framerate = 30
 winHeight = 1000
 winWidth = 1600
 player_start_mass = 1000
 player_start_velocity = [0,0]
 player_start_size = [20,20]
-number_of_rocks = 50
 helper_force = 5000
 thrust_acc = 100000
 percent_ejection = .001
 rebound_velocity = 2
+collision_slow_percent = .99
 MASSES = (100000, 500000, 2000000)
 
 pygame.init()
@@ -41,12 +42,12 @@ pygame.init()
 
 # Create a class for the space rocks extending pygame sprite class
 class SpaceRock(pygame.sprite.Sprite):
-    def __init__(self,mass,position,velocity,id):
+    def __init__(self,mass,position_x,position_y,velocity_x,velocity_y,id):
         super(SpaceRock,self).__init__()
 
         # Mass, Position and Velocity parameters initialized
         self.mass = mass
-        self.velocity = velocity
+        self.velocity = [velocity_x, velocity_y]
         self.id = id
 
         # Choose metor size based on mass
@@ -63,7 +64,7 @@ class SpaceRock(pygame.sprite.Sprite):
         self.surface = pygame.image.load(image)
         self.surface = pygame.transform.scale(self.surface, size)
         self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = (position[0],position[1]) )
+        self.rect = self.surface.get_rect( center = (position_x,position_y) )
 
 
     def update(self):
@@ -174,14 +175,14 @@ class _Setup():
         y_position = random.randint(boundary.top, boundary.bottom) #[10-random.randint(1,2),10-random.randint(1,2)]
         x_velocity = random.randint(-5,5)
         y_velocity = random.randint(-5,5)
-        rand_rock = SpaceRock( mass, [x_position, y_position], [x_velocity,y_velocity], ID )
+        rand_rock = SpaceRock( mass, x_position, y_position, x_velocity, y_velocity, ID )
         return rand_rock
 
     def make_random_rocks(self, num):
         # Create a sprite group to contain random space rocks
         sprite_group = pygame.sprite.Group()
-        for i in range(1,num):
-            sprite_group.add(self.make_random_rock(i))
+        for i in range(num):
+            sprite_group.add(self.make_random_rock(i+1))
         return sprite_group
 
 class Game():
@@ -213,6 +214,25 @@ class Game():
             # Get the set of keys pressed and check for user input
             pressed_keys = pygame.key.get_pressed()
 
+            # Check if any space rocks have collided with eachother
+            for rock in rocks:
+                rock_collision = pygame.sprite.spritecollideany(rock, rocks)
+                if rock_collision.id != rock.id:
+                    if abs(rock_collision.velocity[0] - rock.velocity[0]) < 1 and abs(rock_collision.velocity[1] - rock.velocity[1]) < 1:
+                        if rock_collision.mass > rock.mass:
+                            rock_collision.mass += rock.mass
+                            rock.kill()
+                        else:
+                            rock.mass += rock_collision.mass
+                            rock_collision.kill()
+                        self.remaining_rocks = len(rocks.sprites())
+                    else:
+                        rock_collision.velocity[0] *= collision_slow_percent
+                        rock_collision.velocity[1] *= collision_slow_percent
+                        rock.velocity[0] *= collision_slow_percent
+                        rock.velocity[1] *= collision_slow_percent
+                        print(rock_collision.id)
+
             # Check if any space rocks have collided with the player
             collision = pygame.sprite.spritecollide(blob,rocks, True)
 
@@ -220,7 +240,6 @@ class Game():
                 # If so, then kill the space rock and add the rock's mass to the player mass
                 print( collision[0].mass )
                 blob.mass += collision[0].mass
-                #collision[0].kill()
                 self.remaining_rocks = len(rocks.sprites())
 
             # Update player position
