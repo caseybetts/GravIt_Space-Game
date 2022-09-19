@@ -8,7 +8,7 @@ from pygame.locals import *
 from sys import exit
 import random
 import math
-from Calculations import find_force, radar_coord_conversion
+from Calculations import find_force, radar_coord_conversion, momentum
 
 # Import pygame.locals for easier access to key coordinates
 from pygame.locals import (
@@ -22,23 +22,31 @@ from pygame.locals import (
     QUIT,
 )
 
-#constants
+# Number of space rocks
 number_of_rocks = 60
+
+# Screen parameters
 framerate = 30
 winHeight = 1000
 winWidth = 1600
+
+# Player parameters
 player_start_mass = 1000
-player_start_velocity = [0,0]
-player_start_size = [20,20]
+player_start_velocity_x = 0
+player_start_velocity_y = 0
+player_start_size_x = 20
+player_start_size_y = 20
+
+# Motion parameters
 helper_force = 5000
 thrust_acc = 100000
 percent_ejection = .001
 rebound_velocity = 2
 collision_slow_percent = .99
-MASSES = (100000, 500000, 2000000)
+MASSES = (1000000, 5000000, 2000000)
 radar_reduction = .07
 
-# Outer Boudary
+# Map Boudaries
 outer_left = -winWidth
 outer_right = 2*winWidth
 outer_top = -winHeight
@@ -51,7 +59,6 @@ radar_left = winWidth-20-(map_width*radar_reduction)
 radar_top = winHeight-20-(map_height*radar_reduction)
 
 pygame.init()
-
 
 # Create a class for the space rocks extending pygame sprite class
 class SpaceRock(pygame.sprite.Sprite):
@@ -117,13 +124,13 @@ class SpaceRock(pygame.sprite.Sprite):
 
 class Player(pygame.sprite.Sprite):
     """This is the player sprite"""
-    def __init__(self):
+    def __init__(self, mass, x_velocity, y_velocity, x_size, y_size):
         super(Player,self).__init__()
 
         # Mass, Position and Velocity parameters initialized
-        self.mass = player_start_mass
-        self.velocity = player_start_velocity
-        self.size = player_start_size
+        self.mass = mass
+        self.velocity = [x_velocity,y_velocity]
+        self.size = [x_size, y_size]
         self.id = 0
         # Create pygame Surface
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
@@ -310,10 +317,14 @@ class Game():
                 # If so, then kill the space rock and add the rock's mass to the player mass
                 print( collision_rock[0].mass )
                 blob.mass += collision_rock[0].mass
+                blob.velocity = [momentum(blob.mass,blob.velocity[0], collision_rock[0].mass, collision_rock[0].velocity[0]),
+                                momentum(blob.mass,blob.velocity[1], collision_rock[0].mass, collision_rock[0].velocity[1])]
                 for point in point_group:
                     if point.id == collision_rock[0].id:
                         point.kill()
                 self.remaining_rocks = len(rocks.sprites())
+                print(blob.mass*blob.velocity[0])
+                print(blob.mass*blob.velocity[1])
 
             # Update player position
             blob.update(pressed_keys)
@@ -379,7 +390,13 @@ if __name__ == "__main__":
     player_point = RadarPoint(0)
     point_group.add(player_point)
     # Create the player sprite
-    blob = Player()
+    blob = Player(
+                player_start_mass,
+                player_start_velocity_x,
+                player_start_velocity_y,
+                player_start_size_x,
+                player_start_size_y
+                )
     # Sprite group for all sprites
     all_sprites = pygame.sprite.Group()
     for rock in rocks:
@@ -388,17 +405,6 @@ if __name__ == "__main__":
     # Sprite group just for the player
     player_group = pygame.sprite.Group()
     player_group.add(blob)
-
-    radar_origin = radar_coord_conversion(
-                                    0,
-                                    0,
-                                    radar_reduction,
-                                    radar_left,
-                                    radar_top,
-                                    outer_left,
-                                    outer_top
-                                    )
-    print(radar_origin)
 
     # Create game object and run
     game1 = Game()

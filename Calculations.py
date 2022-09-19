@@ -92,3 +92,8 @@ def radar_coord_conversion(map_x, map_y, reduction_factor, radar_left, radar_top
     radar_y += radar_top
 
     return [radar_x, radar_y]
+
+def momentum(m1,v1,m2,v2):
+    total_momentum = m1*v1 + m2*v2
+    print(total_momentum)
+    return (total_momentum - (m2*v2)) / m1
