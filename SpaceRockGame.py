@@ -43,7 +43,7 @@ thrust_acc = 100000
 percent_ejection = .001
 rebound_velocity = 2
 collision_slow_percent = .99
-MASSES = (1000000, 5000000, 2000000)
+MASSES = (100000, 500000, 2000000)
 radar_reduction = .07
 
 # Map Boudaries
@@ -138,6 +138,10 @@ class Player(pygame.sprite.Sprite):
         self.surface.set_colorkey((0,0,0), RLEACCEL)
         self.rect = self.surface.get_rect( center = (winWidth/2,winHeight/2) )
 
+        # Thrust sound
+        self.thrust_sound = pygame.mixer.Sound("audio/thrust.flac")
+        self.thrust_sound.set_volume(.5)
+
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
         x_thrust = 0
@@ -145,15 +149,23 @@ class Player(pygame.sprite.Sprite):
         if pressed_keys[K_UP]:
             y_thrust = -(self.mass*percent_ejection)*thrust_acc      # ejection mass x acceleration
             self.mass *= .99
+            # Play a sound
+            self.thrust_sound.play()
         if pressed_keys[K_DOWN]:
             y_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
+            # Play a sound
+            self.thrust_sound.play()
         if pressed_keys[K_LEFT]:
             x_thrust = -(self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
+            # Play a sound
+            self.thrust_sound.play()
         if pressed_keys[K_RIGHT]:
             x_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
             self.mass *= .99
+            # Play a sound
+            self.thrust_sound.play()
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
@@ -267,10 +279,14 @@ class Game():
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
         # Create variable to store the number of rocks remaining
         self.remaining_rocks = len(rocks.sprites())
+        # Import background music
+        self.bg_music = pygame.mixer.Sound("audio/background_music.wav")
 
     def run(self):
-        # Contains the loop to render the game and exit on quit event
 
+        # Play background music
+        self.bg_music.play(loops = -1)
+        # Contains the loop to render the game and exit on quit event
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
