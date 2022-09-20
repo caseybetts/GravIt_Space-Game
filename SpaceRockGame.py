@@ -2,13 +2,13 @@
 # By Casey Betts
 
 # mustard sun by Martin Cee (softmartin) (c) copyright 2022 Licensed under a Creative Commons Attribution Noncommercial  (3.0) license. http://dig.ccmixter.org/files/softmartin/65383 Ft: subliminal
-
+import math
 import pygame
+import random
+
+from Calculations import find_force, radar_coord_conversion, momentum, display_coord_conversion
 from pygame.locals import *
 from sys import exit
-import random
-import math
-from Calculations import find_force, radar_coord_conversion, momentum
 
 # Import pygame.locals for easier access to key coordinates
 from pygame.locals import (
@@ -18,12 +18,13 @@ from pygame.locals import (
     K_LEFT,
     K_RIGHT,
     K_ESCAPE,
+    K_c,
     KEYDOWN,
     QUIT,
 )
 
 # Number of space rocks
-number_of_rocks = 60
+number_of_rocks = 100
 
 # Screen parameters
 framerate = 30
@@ -32,7 +33,9 @@ winWidth = 1600
 
 # Player parameters
 player_start_mass = 1000
-player_start_velocity_x = 0
+player_start_pos_x = winWidth/5
+player_start_pos_y = winHeight/2
+player_start_velocity_x = -2
 player_start_velocity_y = 0
 player_start_size_x = 20
 player_start_size_y = 20
@@ -44,15 +47,20 @@ percent_ejection = .001
 rebound_velocity = 2
 collision_slow_percent = .99
 MASSES = (100000, 500000, 2000000)
-radar_reduction = .07
+radar_reduction = .04
+
+# Radar Boundaries
+
 
 # Map Boudaries
-outer_left = -winWidth
-outer_right = 2*winWidth
-outer_top = -winHeight
-outer_bottom = 2*winHeight
+outer_left = -3*winWidth
+outer_right = 4*winWidth
+outer_top = -3*winHeight
+outer_bottom = 4*winHeight
 map_width = outer_right-outer_left
 map_height = outer_bottom-outer_top
+_screen_col = 0
+_screen_row = 0
 
 # Radar coords
 radar_left = winWidth-20-(map_width*radar_reduction)
@@ -88,6 +96,9 @@ class SpaceRock(pygame.sprite.Sprite):
 
 
     def update(self):
+        global _screen_col
+        global _screen_row
+
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
         # print(self.id, "Force ", force)
@@ -112,19 +123,18 @@ class SpaceRock(pygame.sprite.Sprite):
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
-        # Keep sprite within the boudary
-        if self.rect.left < boundary.left:
-            self.velocity[0] = rebound_velocity
-        if self.rect.right > boundary.right:
-            self.velocity[0] = -rebound_velocity
-        if self.rect.top <= boundary.top:
-            self.velocity[1] = rebound_velocity
-        if self.rect.bottom >= boundary.bottom:
-            self.velocity[1] = -rebound_velocity
+        # Remove space rock if it gets too far away
+        if self.rect.left < outer_left or self.rect.right > outer_right:
+            self.kill()
+        if self.rect.top < outer_top or self.rect.bottom > outer_bottom:
+            self.kill()
+
+        return [self.rect.left+(-_screen_col*winWidth), self.rect.top + (-_screen_row*winHeight)]
+
 
 class Player(pygame.sprite.Sprite):
     """This is the player sprite"""
-    def __init__(self, mass, x_velocity, y_velocity, x_size, y_size):
+    def __init__(self, mass, x_pos, y_pos, x_velocity, y_velocity, x_size, y_size):
         super(Player,self).__init__()
 
         # Mass, Position and Velocity parameters initialized
@@ -136,7 +146,7 @@ class Player(pygame.sprite.Sprite):
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
         self.surface = pygame.transform.scale(self.surface, self.size)
         self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = (winWidth/2,winHeight/2) )
+        self.rect = self.surface.get_rect( center = (x_pos,y_pos) )
 
         # Thrust sound
         self.thrust_sound = pygame.mixer.Sound("audio/thrust.flac")
@@ -144,6 +154,10 @@ class Player(pygame.sprite.Sprite):
 
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
+
+        global _screen_col
+        global _screen_row
+
         x_thrust = 0
         y_thrust = 0
         if pressed_keys[K_UP]:
@@ -166,29 +180,52 @@ class Player(pygame.sprite.Sprite):
             self.mass *= .99
             # Play a sound
             self.thrust_sound.play()
+        if pressed_keys[K_c]:
+            self.rect.update((200,200),self.size)
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
-        # print(self.id, "Force ", force)
         # Update acceleration
         acceleration_x = (force[0]+x_thrust)/(self.mass*framerate*framerate)
         acceleration_y = (force[1]+y_thrust)/(self.mass*framerate*framerate)
-        # print(self.id, "Acceleration :", acceleration_x, ", ", acceleration_y)
         # Update object's velocity
         self.velocity[0] += acceleration_x
         self.velocity[1] += acceleration_y
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
-        # Keep player on the screen
+        # Determine screen column
         if self.rect.left < 0:
-            self.velocity[0] = 1
-        if self.rect.right > winWidth:
-            self.velocity[0] = -1
-        if self.rect.top <= 0:
-            self.velocity[1] = 1
-        if self.rect.bottom >= winHeight:
-            self.velocity[1] = -1
+            _screen_col = -1
+        if self.rect.left < -winWidth:
+            _screen_col = -2
+        if self.rect.left < -2*winWidth:
+            _screen_col = -3
+        if self.rect.left > winWidth:
+            _screen_col = 1
+        if self.rect.left > 2*winWidth:
+            _screen_col = 2
+        if self.rect.left > 3*winWidth:
+            _screen_col = 3
+        if self.rect.left > 0 and self.rect.left < winWidth:
+            _screen_col = 0
+
+        # Determine screen column
+        _screen_row = 0
+        if self.rect.top < 0:
+            _screen_row = -1
+        if self.rect.top < -winHeight:
+            _screen_row = -2
+        if self.rect.top < -2*winHeight:
+            _screen_row = -3
+        if self.rect.top > winHeight:
+            _screen_row = 1
+        if self.rect.top > 2*winHeight:
+            _screen_row = 2
+        if self.rect.top > 3*winHeight:
+            _screen_row = 3
+
+        return [self.rect.left+(-_screen_col*winWidth), self.rect.top + (-_screen_row*winHeight)]
 
 class RadarPoint(pygame.sprite.Sprite):
     """This is a point on the radar that reflects the location of a space rock"""
@@ -220,8 +257,10 @@ class RadarPoint(pygame.sprite.Sprite):
             self.rect[1] = player_coords[1]
         else:
             # Find the space rock with the same id and change position to match
+            alive = False
             for rock in rocks:
                 if self.id == rock.id:
+                    alive = True
                     rock_coords = radar_coord_conversion(
                                     rock.rect[0],
                                     rock.rect[1],
@@ -233,13 +272,10 @@ class RadarPoint(pygame.sprite.Sprite):
                                     )
                     self.rect[0] = rock_coords[0]
                     self.rect[1] = rock_coords[1]
+            # If the alive flag does not get put to True then a rock was not found, kill the point
+            if not alive: self.kill()
 
-class OuterBoudary():
-    def __init__(self,left,right,top,bottom):
-        self.left = left
-        self.right = right
-        self.top = top
-        self.bottom = bottom
+
 
 class _Setup():
     "Provides functions needed to set up the game"
@@ -247,10 +283,10 @@ class _Setup():
     def make_random_rock(self, ID):
         # returns a space rock of random mass and position
         mass = random.choice(MASSES) #random.randint(5,10)*1000000000000000
-        x_position = random.randint(boundary.left,boundary.right)
-        y_position = random.randint(boundary.top, boundary.bottom) #[10-random.randint(1,2),10-random.randint(1,2)]
-        x_velocity = random.randint(-5,5)
-        y_velocity = random.randint(-5,5)
+        x_position = random.randint(outer_left,outer_right)
+        y_position = random.randint(outer_top, outer_bottom) #[10-random.randint(1,2),10-random.randint(1,2)]
+        x_velocity = random.randint(-1,1)
+        y_velocity = random.randint(-1,1)
         rand_rock = SpaceRock( mass, x_position, y_position, x_velocity, y_velocity, ID )
         return rand_rock
 
@@ -285,7 +321,7 @@ class Game():
     def run(self):
 
         # Play background music
-        self.bg_music.play(loops = -1)
+        # self.bg_music.play(loops = -1)
         # Contains the loop to render the game and exit on quit event
         while True:
             for event in pygame.event.get():
@@ -333,22 +369,18 @@ class Game():
                 # If so, then kill the space rock and add the rock's mass to the player mass
                 print( collision_rock[0].mass )
                 blob.mass += collision_rock[0].mass
-                blob.velocity = [momentum(blob.mass,blob.velocity[0], collision_rock[0].mass, collision_rock[0].velocity[0]),
-                                momentum(blob.mass,blob.velocity[1], collision_rock[0].mass, collision_rock[0].velocity[1])]
+                blob.velocity = [momentum(blob.mass,blob.velocity[0], collision_rock[0].mass, collision_rock[0].velocity[0])/2,
+                                momentum(blob.mass,blob.velocity[1], collision_rock[0].mass, collision_rock[0].velocity[1])/2]
                 for point in point_group:
                     if point.id == collision_rock[0].id:
                         point.kill()
                 self.remaining_rocks = len(rocks.sprites())
-                print(blob.mass*blob.velocity[0])
-                print(blob.mass*blob.velocity[1])
 
             # Update player position
-            blob.update(pressed_keys)
-            self.screen.blit(blob.surface, blob.rect)
+            self.screen.blit(blob.surface, blob.update(pressed_keys))
             # Update space rock positions
-            rocks.update()
             for entity in rocks:
-                self.screen.blit(entity.surface, entity.rect)
+                self.screen.blit(entity.surface, entity.update())
             # Update the radar point positions
             point_group.update()
 
@@ -361,14 +393,23 @@ class Game():
                     (outer_right-outer_left)*radar_reduction,
                     (outer_bottom-outer_top)*radar_reduction)
                     )
+            # Draw a rectangle for the screen location on the radar screen
+            screen_position = radar_coord_conversion( _screen_col*winWidth,
+                                        _screen_row*winHeight,
+                                        radar_reduction,
+                                        radar_left,
+                                        radar_top,
+                                        outer_left,
+                                        outer_top
+                                        )
             pygame.draw.rect(
-                self.screen,
-                (30,30,30),
-                (1356,
-                    840,
-                    winWidth*radar_reduction,
-                    winHeight*radar_reduction)
-            )
+                            self.screen,
+                            (40,40,40),
+                            (   screen_position[0],
+                                screen_position[1],
+                                winWidth*radar_reduction,
+                                winHeight*radar_reduction)
+                            )
 
             # Draw the radar points on the screen
             for entity in point_group:
@@ -395,8 +436,6 @@ class Game():
         print("cleanup complete")
 
 if __name__ == "__main__":
-    # Create rock boundary
-    boundary = OuterBoudary(outer_left,outer_right,outer_top,outer_bottom)
     # Create the rocks and add them to a sprite group
     setup = _Setup()
     rocks = setup.make_random_rocks(number_of_rocks)
@@ -408,6 +447,8 @@ if __name__ == "__main__":
     # Create the player sprite
     blob = Player(
                 player_start_mass,
+                player_start_pos_x,
+                player_start_pos_y,
                 player_start_velocity_x,
                 player_start_velocity_y,
                 player_start_size_x,

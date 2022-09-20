@@ -93,7 +93,18 @@ def radar_coord_conversion(map_x, map_y, reduction_factor, radar_left, radar_top
 
     return [radar_x, radar_y]
 
+def display_coord_conversion(map_x, map_y, scrn_col, scrn_row):
+    # This converts the coordinate from the map to what should be displayed based on what area of the map is being shown
+
+    # Calculate the display x coord based on the screen col
+    disp_x = map_x + (winWidth * scrn_col)
+
+    # Calculate the display y coord based on the screen row
+    disp_y = map_y + (winWidth * scrn_row)
+
+    return [disp_x,disp_y]
+
 def momentum(m1,v1,m2,v2):
-    total_momentum = m1*v1 + m2*v2
-    print(total_momentum)
-    return (total_momentum - (m2*v2)) / m1
+    # returns the final velocity of two objects colliding with eachother
+    final_velocity = (m1*v1 + m2*v2)/(m1+m2)
+    return final_velocity
