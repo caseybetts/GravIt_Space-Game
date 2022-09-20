@@ -9,6 +9,8 @@ import random
 from Calculations import find_force, radar_coord_conversion, momentum, display_coord_conversion
 from pygame.locals import *
 from sys import exit
+from ThrustSprite import ThrustSprite
+
 
 # Import pygame.locals for easier access to key coordinates
 from pygame.locals import (
@@ -32,7 +34,7 @@ winHeight = 1000
 winWidth = 1600
 
 # Player parameters
-player_start_mass = 1000
+player_start_mass = 6000
 player_start_pos_x = winWidth/5
 player_start_pos_y = winHeight/2
 player_start_velocity_x = -2
@@ -67,7 +69,8 @@ radar_reduction = .04
 radar_left = winWidth-20-(map_width*radar_reduction)
 radar_top = winHeight-20-(map_height*radar_reduction)
 
-pygame.init()
+if not pygame.get_init():
+    pygame.init()
 
 # Create a class for the space rocks extending pygame sprite class
 class SpaceRock(pygame.sprite.Sprite):
@@ -167,6 +170,10 @@ class Player(pygame.sprite.Sprite):
         self.thrust_sound = pygame.mixer.Sound("audio/thrust.flac")
         self.thrust_sound.set_volume(.5)
 
+    def eject_mass(self, direction):
+        ejected = ThrustSprite(self.rect.centerx,self.rect.centery,self.mass,direction)
+        thrust_group.add(ejected)
+
     # Move the sprite based on user keypresses
     def update(self, pressed_keys):
 
@@ -177,22 +184,26 @@ class Player(pygame.sprite.Sprite):
         y_thrust = 0
         if pressed_keys[K_UP]:
             y_thrust = -(self.mass*percent_ejection)*thrust_acc      # ejection mass x acceleration
-            self.mass *= .99
+            self.mass *= 1-percent_ejection
+            self.eject_mass('down')
             # Play a sound
             self.thrust_sound.play()
         if pressed_keys[K_DOWN]:
             y_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
-            self.mass *= .99
+            self.mass *= 1-percent_ejection
+            self.eject_mass('up')
             # Play a sound
             self.thrust_sound.play()
         if pressed_keys[K_LEFT]:
             x_thrust = -(self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
-            self.mass *= .99
+            self.mass *= 1-percent_ejection
+            self.eject_mass('right')
             # Play a sound
             self.thrust_sound.play()
         if pressed_keys[K_RIGHT]:
             x_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
-            self.mass *= .99
+            self.mass *= 1-percent_ejection
+            self.eject_mass('left')
             # Play a sound
             self.thrust_sound.play()
         if pressed_keys[K_c]:
@@ -300,8 +311,6 @@ class RadarPoint(pygame.sprite.Sprite):
                     self.rect[1] = rock_coords[1]
             # If the alive flag does not get put to True then a rock was not found, kill the point
             if not alive: self.kill()
-
-
 
 class _Setup():
     "Provides functions needed to set up the game"
@@ -412,6 +421,12 @@ class Game():
                 self.screen.blit(entity.surface, entity.update())
             # Update the radar point positions
             point_group.update()
+            # Update the thrust group
+            thrust_group.update()
+            for entity in thrust_group:
+                thr_x = entity.rect.left+(-_screen_col*winWidth)
+                thr_y = entity.rect.top + (-_screen_row*winHeight)
+                self.screen.blit(entity.surface,(thr_x,thr_y))
 
             # Draw a rectangle for the radar view
             pygame.draw.rect(
@@ -491,7 +506,9 @@ if __name__ == "__main__":
     # Sprite group just for the player
     player_group = pygame.sprite.Group()
     player_group.add(blob)
+    # Sprite group for the thrust sprites
+    thrust_group = pygame.sprite.Group()
 
     # Create game object and run
-    game1 = Game()
-    game1.run()
+    game = Game()
+    game.run()
