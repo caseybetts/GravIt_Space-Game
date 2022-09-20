@@ -41,16 +41,16 @@ player_start_size_x = 20
 player_start_size_y = 20
 
 # Motion parameters
-helper_force = 5000
-thrust_acc = 100000
+thrust_acc = 1000000
 percent_ejection = .001
-rebound_velocity = 2
 collision_slow_percent = .99
-MASSES = (100000, 500000, 2000000)
-radar_reduction = .04
 
-# Radar Boundaries
-
+# Space Rock parameters
+helper_force = 5000
+small_rock = 100000
+med_rock = 500000
+big_rock = 2000000
+MASSES = (small_rock, med_rock, big_rock)
 
 # Map Boudaries
 outer_left = -3*winWidth
@@ -63,6 +63,7 @@ _screen_col = 0
 _screen_row = 0
 
 # Radar coords
+radar_reduction = .04
 radar_left = winWidth-20-(map_width*radar_reduction)
 radar_top = winHeight-20-(map_height*radar_reduction)
 
@@ -94,6 +95,14 @@ class SpaceRock(pygame.sprite.Sprite):
         self.surface.set_colorkey((0,0,0), RLEACCEL)
         self.rect = self.surface.get_rect( center = (position_x,position_y) )
 
+    def change_size(self):
+        """ Change the size of the space rock based on it's mass"""
+        if self.mass > 2*big_rock:
+            self.surface = pygame.transform.scale(self.surface, (80,80))
+            self.surface.set_colorkey((0,0,0), RLEACCEL)
+        if self.mass > 4*big_rock:
+            self.surface = pygame.transform.scale(self.surface, (120,120))
+            self.surface.set_colorkey((0,0,0), RLEACCEL)
 
     def update(self):
         global _screen_col
@@ -128,6 +137,12 @@ class SpaceRock(pygame.sprite.Sprite):
             self.kill()
         if self.rect.top < outer_top or self.rect.bottom > outer_bottom:
             self.kill()
+
+        ##################### For Testing: Constrain the rocks to the window ##################
+        # if self.rect.left < 0: self.velocity[0] = 2
+        # if self.rect.right > winWidth: self.velocity[0] = -2
+        # if self.rect.top < 0: self.velocity[1] = 2
+        # if self.rect.bottom > winHeight: self.velocity[1] = -2
 
         return [self.rect.left+(-_screen_col*winWidth), self.rect.top + (-_screen_row*winHeight)]
 
@@ -234,12 +249,23 @@ class RadarPoint(pygame.sprite.Sprite):
         super(RadarPoint, self).__init__()
         self.id = id
         # Create pygame Surface
-        self.surface = pygame.Surface((3,3))
+        self.surface = pygame.Surface((1,1))
         self.rect = self.surface.get_rect()
+
         if id == 0:
             self.surface.fill("Green")
         else:
             self.surface.fill("Red")
+
+    def change_size(self, mass):
+        """Chage the size of the radar point"""
+        if mass >= 2*big_rock:
+            self.surface = pygame.Surface((2,2))
+            self.surface.fill("Red")
+        if mass >= 4*big_rock:
+            self.surface = pygame.Surface((4,4))
+            self.surface.fill("Red")
+
 
     def update(self):
         # If the point is the player
@@ -344,7 +370,10 @@ class Game():
                     if abs(rock_collision.velocity[0] - rock.velocity[0]) < 1 and abs(rock_collision.velocity[1] - rock.velocity[1]) < 1:
                         if rock_collision.mass > rock.mass:
                             rock_collision.mass += rock.mass
+                            rock_collision.change_size()
                             for point in point_group:
+                                if point.id == rock_collision.id:
+                                    point.change_size(rock_collision.mass)
                                 if point.id == rock.id:
                                     point.kill()
                             rock.kill()
