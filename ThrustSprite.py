@@ -9,7 +9,7 @@ class ThrustSprite(pygame.sprite.Sprite):
 
     def __init__(self, x_pos, y_pos, mass, direction):
         super(ThrustSprite, self).__init__()
-        self.speed = 20
+        self.speed = 30
         self.direction = direction
         self.count = 0
 

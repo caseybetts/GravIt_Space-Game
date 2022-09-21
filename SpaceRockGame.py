@@ -149,7 +149,6 @@ class SpaceRock(pygame.sprite.Sprite):
 
         return [self.rect.left+(-_screen_col*winWidth), self.rect.top + (-_screen_row*winHeight)]
 
-
 class Player(pygame.sprite.Sprite):
     """This is the player sprite"""
     def __init__(self, mass, x_pos, y_pos, x_velocity, y_velocity, x_size, y_size):
@@ -348,6 +347,10 @@ class Game():
         self.clock = pygame.time.Clock()
         # Font
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
+        # Create Radar screen surface
+        self.radar_screen = pygame.Surface(((outer_right-outer_left)*radar_reduction,(outer_bottom-outer_top)*radar_reduction))
+        self.radar_screen.fill((20,20,20))
+        self.radar_screen.set_alpha(128)
         # Create variable to store the number of rocks remaining
         self.remaining_rocks = len(rocks.sprites())
         # Import background music
@@ -429,14 +432,15 @@ class Game():
                 self.screen.blit(entity.surface,(thr_x,thr_y))
 
             # Draw a rectangle for the radar view
-            pygame.draw.rect(
-                self.screen,
-                (20,20,20),
-                (radar_left,
-                    radar_top,
-                    (outer_right-outer_left)*radar_reduction,
-                    (outer_bottom-outer_top)*radar_reduction)
-                    )
+            self.screen.blit(self.radar_screen,(radar_left,radar_top))
+            # pygame.draw.rect(
+            #     self.screen,
+            #     (20,20,20),
+            #     (radar_left,
+            #         radar_top,
+            #         (outer_right-outer_left)*radar_reduction,
+            #         (outer_bottom-outer_top)*radar_reduction)
+            #         )
             # Draw a rectangle for the screen location on the radar screen
             screen_position = radar_coord_conversion( _screen_col*winWidth,
                                         _screen_row*winHeight,
