@@ -14,13 +14,13 @@ class ThrustSprite(pygame.sprite.Sprite):
         self.count = 0
 
         size = 0
-        if mass > 100000:
+        if mass > 4e10:
             size = 1
-        if mass > 5000000:
+        elif mass > 4e16:
             size = 5
-        if mass > 20000000:
+        if mass > 4e17:
             size = 10
-        if mass > 50000000:
+        if mass > 4e18:
             size = 20
 
         self.surface = pygame.Surface((size,size))
@@ -30,13 +30,13 @@ class ThrustSprite(pygame.sprite.Sprite):
     def update(self):
 
         if self.direction == 'left':
-            self.rect.move_ip(-self.speed,0)
-        if self.direction == 'right':
             self.rect.move_ip(self.speed,0)
+        if self.direction == 'right':
+            self.rect.move_ip(-self.speed,0)
         if self.direction == 'up':
-            self.rect.move_ip(0,-self.speed)
-        if self.direction == 'down':
             self.rect.move_ip(0,self.speed)
+        if self.direction == 'down':
+            self.rect.move_ip(0,-self.speed)
 
         # Remove sprite when it gets too far away
         if self.count > 10:

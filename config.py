@@ -4,9 +4,12 @@
 number_of_rocks = 150
 
 # Screen parameters
-framerate = 30
+framerate = 40
 winHeight = 1000
 winWidth = 1600
+
+# Sound
+music_on = False
 
 # Player parameters
 player_start_mass = 4e15 #kg

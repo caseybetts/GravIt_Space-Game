@@ -14,93 +14,15 @@ from Calculations import (
     )
 from config import *
 from SpaceRock import *
+from Player import *
 from pygame.locals import *
 from sys import exit
-from ThrustSprite import ThrustSprite
-# Import pygame.locals for easier access to key coordinates
-from pygame.locals import (
-    RLEACCEL,
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
-    K_c,
-    KEYDOWN,
-    QUIT,
-    )
+
+
 
 if not pygame.get_init():
     pygame.init()
 
-class Player(pygame.sprite.Sprite):
-    """This is the player sprite"""
-    def __init__(self, mass, x_pos, y_pos, x_velocity, y_velocity, x_size, y_size):
-        super(Player,self).__init__()
-
-        # Mass, Position and Velocity parameters initialized
-        self.mass = mass
-        self.velocity = [x_velocity,y_velocity]
-        self.size = [x_size, y_size]
-        self.id = 0
-        # Create pygame Surface
-        self.surface = pygame.image.load("Graphics/GreenBlob.png")
-        self.surface = pygame.transform.scale(self.surface, self.size)
-        self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = (x_pos,y_pos) )
-
-        # Thrust sound
-        self.thrust_sound = pygame.mixer.Sound("audio/thrust.flac")
-        self.thrust_sound.set_volume(.5)
-
-    def eject_mass(self, direction):
-        ejected = ThrustSprite(self.rect.centerx,self.rect.centery,self.mass,direction)
-        thrust_group.add(ejected)
-
-    # Move the sprite based on user keypresses
-    def update(self, pressed_keys, scrn_col, scrn_row):
-
-        x_thrust = 0
-        y_thrust = 0
-        if pressed_keys[K_UP]:
-            y_thrust = -(self.mass*percent_ejection)*thrust_acc      # ejection mass x acceleration
-            self.mass *= 1-percent_ejection
-            self.eject_mass('down')
-            # Play a sound
-            self.thrust_sound.play()
-        if pressed_keys[K_DOWN]:
-            y_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
-            self.mass *= 1-percent_ejection
-            self.eject_mass('up')
-            # Play a sound
-            self.thrust_sound.play()
-        if pressed_keys[K_LEFT]:
-            x_thrust = -(self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
-            self.mass *= 1-percent_ejection
-            self.eject_mass('right')
-            # Play a sound
-            self.thrust_sound.play()
-        if pressed_keys[K_RIGHT]:
-            x_thrust = (self.mass*percent_ejection)*thrust_acc       # ejection mass x acceleration
-            self.mass *= 1-percent_ejection
-            self.eject_mass('left')
-            # Play a sound
-            self.thrust_sound.play()
-        if pressed_keys[K_c]:
-            self.rect.update((200,200),self.size)
-
-        # Calculate force on object
-        force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
-        # Update acceleration
-        acceleration_x = (force[0]+x_thrust)/(self.mass*framerate*framerate)
-        acceleration_y = (force[1]+y_thrust)/(self.mass*framerate*framerate)
-        # Update object's velocity
-        self.velocity[0] += acceleration_x
-        self.velocity[1] += acceleration_y
-        # Find the displacement in position
-        self.rect.move_ip(self.velocity[0],self.velocity[1])
-
-        return [self.rect.left+(-scrn_col*winWidth), self.rect.top + (-scrn_row*winHeight)]
 
 class RadarPoint(pygame.sprite.Sprite):
     """This is a point on the radar that reflects the location of a space rock"""
@@ -210,6 +132,9 @@ class Game():
         self.screen_col = 0
         self.screen_row = 0
 
+        # Key down flag
+        self.key_down_flag = False
+
     def update_screen_position(self, player_x, player_y):
         """Given the player's position, this determines the column and row of the screen on the map."""
 
@@ -248,22 +173,35 @@ class Game():
     def run(self):
 
         # Play background music
-        # self.bg_music.play(loops = -1)
+        if music_on:
+            self.bg_music.play(loops = -1)
 
         # Contains the loop to render the game and exit on quit event
         while True:
+
+            # Loop through all the current pygame events in the queue
             for event in pygame.event.get():
+
+                # Check if a key is currently pressed
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.cleanup()
+                    else:
+                        # Change the key down flag to True
+                        self.key_down_flag = True
+
+                elif event.type == pygame.KEYUP:
+                    # Reset the key down flag
+                    self.key_down_flag = False
+
                 elif event.type == pygame.QUIT:
                     self.cleanup()
 
-            # White background
-            self.screen.fill('Black')
-
-            # Get the set of keys pressed and check for user input
+            # Get the set of keys pressed
             pressed_keys = pygame.key.get_pressed()
+
+            # Reset the background
+            self.screen.fill('Black')
 
             # Check if any space rocks have collided with eachother
             for rock in rocks:
@@ -307,8 +245,8 @@ class Game():
                         point.kill()
                 self.remaining_rocks = len(rocks.sprites())
 
-            # Update player position
-            self.screen.blit(blob.surface, blob.update(pressed_keys, self.screen_col, self.screen_row))
+            # Update player position and thrust group
+            self.screen.blit(blob.surface, blob.update(all_sprites, self.key_down_flag, pressed_keys, self.screen_col, self.screen_row))
 
             # Update screen position
             self.update_screen_position(blob.rect.left,blob.rect.top)
@@ -320,12 +258,16 @@ class Game():
             # Update the radar point positions
             point_group.update()
 
-            # Update the thrust group
-            thrust_group.update()
-            for entity in thrust_group:
-                thr_x = entity.rect.left+(-self.screen_col*winWidth)
-                thr_y = entity.rect.top + (-self.screen_row*winHeight)
-                self.screen.blit(entity.surface,(thr_x,thr_y))
+            # Update thrust group
+            blob.thrust_group.update()
+
+            for sprite in blob.thrust_group:
+                # Change coordinates based on the screen position
+                thr_x = sprite.rect.left + (-self.screen_col*winWidth)
+                thr_y = sprite.rect.top + (-self.screen_row*winHeight)
+
+                # Blit the thrust sprite on the screen
+                self.screen.blit(sprite.surface,(thr_x,thr_y))
 
             # Blit the radar screen on the window
             self.screen.blit(self.radar_screen,(radar_left,radar_top))
@@ -398,8 +340,6 @@ if __name__ == "__main__":
     # Sprite group just for the player
     player_group = pygame.sprite.Group()
     player_group.add(blob)
-    # Sprite group for the thrust sprites
-    thrust_group = pygame.sprite.Group()
 
     # Create game object and run
     game = Game()
