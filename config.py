@@ -36,8 +36,6 @@ outer_top = -3*winHeight
 outer_bottom = 4*winHeight
 map_width = outer_right-outer_left
 map_height = outer_bottom-outer_top
-_screen_col = 0
-_screen_row = 0
 
 # Radar coords
 radar_reduction = .04

@@ -2,7 +2,7 @@
 from math import sqrt, sin, cos, atan, fabs
 
 #Constants
-G = 6.6743e-1 # m3 kg-1 s-2
+G = 6.6743e-11 # m3 kg-1 s-2
 little_g = -9.8 # m/s^2
 
 # Define a function for calculating change in velocity

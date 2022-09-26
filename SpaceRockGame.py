@@ -6,13 +6,17 @@ import math
 import pygame
 import random
 
-from Calculations import find_force, radar_coord_conversion, momentum, display_coord_conversion
+from Calculations import (
+    find_force,
+    radar_coord_conversion,
+    momentum,
+    display_coord_conversion
+    )
 from config import *
+from SpaceRock import *
 from pygame.locals import *
 from sys import exit
 from ThrustSprite import ThrustSprite
-
-
 # Import pygame.locals for easier access to key coordinates
 from pygame.locals import (
     RLEACCEL,
@@ -24,87 +28,10 @@ from pygame.locals import (
     K_c,
     KEYDOWN,
     QUIT,
-)
+    )
 
 if not pygame.get_init():
     pygame.init()
-
-# Create a class for the space rocks extending pygame sprite class
-class SpaceRock(pygame.sprite.Sprite):
-    def __init__(self,mass,position_x,position_y,velocity_x,velocity_y,id):
-        super(SpaceRock,self).__init__()
-
-        # Mass, Position and Velocity parameters initialized
-        self.mass = mass
-        self.velocity = [velocity_x, velocity_y]
-        self.id = id
-
-        # Choose metor size based on mass
-        if mass == min(MASSES):
-            image = "Graphics/meteorBrown_tiny1.png"
-            size = (10,10)
-        elif mass == max(MASSES):
-            image = "Graphics/meteorBrown_med3.png"
-            size = (40,40)
-        else:
-            image = "Graphics/meteorBrown_big2.png"
-            size = (20,20)
-        # Create pygame Surface
-        self.surface = pygame.image.load(image)
-        self.surface = pygame.transform.scale(self.surface, size)
-        self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = (position_x,position_y) )
-
-    def change_size(self):
-        """ Change the size of the space rock based on it's mass"""
-        if self.mass > 2*big_rock:
-            self.surface = pygame.transform.scale(self.surface, (80,80))
-            self.surface.set_colorkey((0,0,0), RLEACCEL)
-        if self.mass > 4*big_rock:
-            self.surface = pygame.transform.scale(self.surface, (120,120))
-            self.surface.set_colorkey((0,0,0), RLEACCEL)
-
-    def update(self):
-        global _screen_col
-        global _screen_row
-
-        # Calculate force on object
-        force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
-        # print(self.id, "Force ", force)
-        # Give the rocks a little force to keep them from clustering at the edges
-        if self.rect[0] < 0:
-            force[0]+= helper_force
-        elif self.rect[0] > winWidth:
-            force[0]-= helper_force
-
-        if self.rect[1] < 0:
-            force[1]+= helper_force
-        elif self.rect[1] > winHeight:
-            force[1]-= helper_force
-
-        # Update acceleration
-        acceleration_x = force[0]/(self.mass*framerate*framerate)
-        acceleration_y = force[1]/(self.mass*framerate*framerate)
-        # print(self.id, "Acceleration :", acceleration_x, ", ", acceleration_y)
-        # Update object's velocity
-        self.velocity[0] += acceleration_x
-        self.velocity[1] += acceleration_y
-        # Find the displacement in position
-        self.rect.move_ip(self.velocity[0],self.velocity[1])
-
-        # Remove space rock if it gets too far away
-        if self.rect.left < outer_left or self.rect.right > outer_right:
-            self.kill()
-        if self.rect.top < outer_top or self.rect.bottom > outer_bottom:
-            self.kill()
-
-        ##################### For Testing: Constrain the rocks to the window ##################
-        # if self.rect.left < 0: self.velocity[0] = 2
-        # if self.rect.right > winWidth: self.velocity[0] = -2
-        # if self.rect.top < 0: self.velocity[1] = 2
-        # if self.rect.bottom > winHeight: self.velocity[1] = -2
-
-        return [self.rect.left+(-_screen_col*winWidth), self.rect.top + (-_screen_row*winHeight)]
 
 class Player(pygame.sprite.Sprite):
     """This is the player sprite"""
@@ -131,10 +58,7 @@ class Player(pygame.sprite.Sprite):
         thrust_group.add(ejected)
 
     # Move the sprite based on user keypresses
-    def update(self, pressed_keys):
-
-        global _screen_col
-        global _screen_row
+    def update(self, pressed_keys, scrn_col, scrn_row):
 
         x_thrust = 0
         y_thrust = 0
@@ -176,38 +100,7 @@ class Player(pygame.sprite.Sprite):
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
-        # Determine screen column
-        if self.rect.left < 0:
-            _screen_col = -1
-        if self.rect.left < -winWidth:
-            _screen_col = -2
-        if self.rect.left < -2*winWidth:
-            _screen_col = -3
-        if self.rect.left > winWidth:
-            _screen_col = 1
-        if self.rect.left > 2*winWidth:
-            _screen_col = 2
-        if self.rect.left > 3*winWidth:
-            _screen_col = 3
-        if self.rect.left > 0 and self.rect.left < winWidth:
-            _screen_col = 0
-
-        # Determine screen column
-        _screen_row = 0
-        if self.rect.top < 0:
-            _screen_row = -1
-        if self.rect.top < -winHeight:
-            _screen_row = -2
-        if self.rect.top < -2*winHeight:
-            _screen_row = -3
-        if self.rect.top > winHeight:
-            _screen_row = 1
-        if self.rect.top > 2*winHeight:
-            _screen_row = 2
-        if self.rect.top > 3*winHeight:
-            _screen_row = 3
-
-        return [self.rect.left+(-_screen_col*winWidth), self.rect.top + (-_screen_row*winHeight)]
+        return [self.rect.left+(-scrn_col*winWidth), self.rect.top + (-scrn_row*winHeight)]
 
 class RadarPoint(pygame.sprite.Sprite):
     """This is a point on the radar that reflects the location of a space rock"""
@@ -313,10 +206,50 @@ class Game():
         # Import background music
         self.bg_music = pygame.mixer.Sound("audio/background_music.wav")
 
+        # Create a variable for the screen column and row
+        self.screen_col = 0
+        self.screen_row = 0
+
+    def update_screen_position(self, player_x, player_y):
+        """Given the player's position, this determines the column and row of the screen on the map."""
+
+        # Determine screen column
+        if player_x < -2*winWidth:
+            self.screen_col = -3
+        elif player_x < -winWidth:
+            self.screen_col = -2
+        elif player_x < 0:
+            self.screen_col = -1
+        elif player_x < winWidth:
+            self.screen_col = 0
+        elif player_x < 2*winWidth:
+            self.screen_col = 1
+        elif player_x < 3*winWidth:
+            self.screen_col = 2
+        else:
+            self.screen_col = 3
+
+        # Determine screen column
+        if player_y < -2*winHeight:
+            self.screen_row = -3
+        elif player_y < -winHeight:
+            self.screen_row = -2
+        elif player_y < 0:
+            self.screen_row = -1
+        elif player_y < winHeight:
+            self.screen_row = 0
+        elif player_y < 2*winHeight:
+            self.screen_row = 1
+        elif player_y < 3*winHeight:
+            self.screen_row = 2
+        else:
+            self.screen_row = 3
+
     def run(self):
 
         # Play background music
         # self.bg_music.play(loops = -1)
+
         # Contains the loop to render the game and exit on quit event
         while True:
             for event in pygame.event.get():
@@ -375,32 +308,30 @@ class Game():
                 self.remaining_rocks = len(rocks.sprites())
 
             # Update player position
-            self.screen.blit(blob.surface, blob.update(pressed_keys))
+            self.screen.blit(blob.surface, blob.update(pressed_keys, self.screen_col, self.screen_row))
+
+            # Update screen position
+            self.update_screen_position(blob.rect.left,blob.rect.top)
+
             # Update space rock positions
             for entity in rocks:
-                self.screen.blit(entity.surface, entity.update())
+                self.screen.blit(entity.surface, entity.update(all_sprites, self.screen_col, self.screen_row))
+
             # Update the radar point positions
             point_group.update()
+
             # Update the thrust group
             thrust_group.update()
             for entity in thrust_group:
-                thr_x = entity.rect.left+(-_screen_col*winWidth)
-                thr_y = entity.rect.top + (-_screen_row*winHeight)
+                thr_x = entity.rect.left+(-self.screen_col*winWidth)
+                thr_y = entity.rect.top + (-self.screen_row*winHeight)
                 self.screen.blit(entity.surface,(thr_x,thr_y))
 
-            # Draw a rectangle for the radar view
+            # Blit the radar screen on the window
             self.screen.blit(self.radar_screen,(radar_left,radar_top))
-            # pygame.draw.rect(
-            #     self.screen,
-            #     (20,20,20),
-            #     (radar_left,
-            #         radar_top,
-            #         (outer_right-outer_left)*radar_reduction,
-            #         (outer_bottom-outer_top)*radar_reduction)
-            #         )
-            # Draw a rectangle for the screen location on the radar screen
-            screen_position = radar_coord_conversion( _screen_col*winWidth,
-                                        _screen_row*winHeight,
+
+            screen_position = radar_coord_conversion( self.screen_col*winWidth,
+                                        self.screen_row*winHeight,
                                         radar_reduction,
                                         radar_left,
                                         radar_top,
