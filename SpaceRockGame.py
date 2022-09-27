@@ -54,18 +54,28 @@ class _Setup():
 class Game():
     # Contains the loop for running the game
     def __init__(self):
+
         # Create a display window
         self.screen = pygame.display.set_mode((winWidth,winHeight))
+
         # Create a clock to control frames per second
         self.clock = pygame.time.Clock()
+
         # Font
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
+
         # Create Radar screen surface
         self.radar_screen = pygame.Surface(((outer_right-outer_left)*radar_reduction,(outer_bottom-outer_top)*radar_reduction))
         self.radar_screen.fill((20,20,20))
         self.radar_screen.set_alpha(128)
+
         # Create variable to store the number of rocks remaining
         self.remaining_rocks = len(rocks.sprites())
+
+        # Create background image surface
+        self.bg_image = pygame.image.load("Graphics/bg_stars5.jpg")
+        self.bg_image = pygame.transform.scale(self.bg_image, (winWidth,winHeight))
+
         # Import background music
         self.bg_music = pygame.mixer.Sound("audio/background_music.wav")
 
@@ -142,7 +152,7 @@ class Game():
             pressed_keys = pygame.key.get_pressed()
 
             # Reset the background
-            self.screen.fill('Black')
+            self.screen.blit(self.bg_image,(0,0))
 
             # Check if any space rocks have collided with eachother
             for rock in rocks:
