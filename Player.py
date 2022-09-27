@@ -85,4 +85,4 @@ class Player(pygame.sprite.Sprite):
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
-        return [self.rect.left+(-scrn_col*winWidth), self.rect.top + (-scrn_row*winHeight)]
+        return [self.rect.left + (-scrn_col*winWidth), self.rect.top + (-scrn_row*winHeight)]
