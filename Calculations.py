@@ -1,5 +1,6 @@
 # This file holds all the calculation functions for the game
 from math import sqrt, sin, cos, atan, fabs
+from config import grav_threshold
 
 #Constants
 G = 6.6743e-11 # m3 kg-1 s-2
@@ -30,10 +31,10 @@ def find_force(sprite_group, xcoord, ycoord, mass, ID):
         else:
             angle = 0
         # Calculate total force
-        if total_distance > 60:
+        if total_distance > grav_threshold:
             total_force = (G*mass*sprite.mass)/(total_distance**2) # N (force)
         else:
-            total_force = (G*mass*sprite.mass)/(40**2) # N (force)
+            total_force = (G*mass*sprite.mass)/(grav_threshold**2) # N (force)
 
         # Calculate force in x direction
         if distance_x < 0:

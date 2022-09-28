@@ -1,15 +1,15 @@
 # This is a configuration file for SpaceRockGame.py
 
-# Number of space rocks
-number_of_rocks = 150
-
 # Screen parameters
-framerate = 40
+framerate = 35
 winHeight = 1000
-winWidth = 1600
+winWidth =  1600
 
 # Sound
 music_on = False
+
+# Graphics
+button_image_location = 'Graphics/Blue_button.png'
 
 # Player parameters
 player_start_mass = 4e15 #kg
@@ -24,13 +24,16 @@ player_start_size_y = 20
 thrust_acc = 1000000
 percent_ejection = .001
 collision_slow_percent = .99
+grav_threshold = 20
 
 # Space Rock parameters
-helper_force = 5000
+number_of_rocks = 1
+helper_force =  5000
 small_rock =    500000
 med_rock =      50000000000000
 big_rock =      100000000000000
 MASSES = (small_rock, med_rock, big_rock)
+rock_start_velocity = (0,500)
 
 # Map Boudaries
 outer_left = -3*winWidth
