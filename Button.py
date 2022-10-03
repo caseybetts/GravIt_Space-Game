@@ -3,6 +3,8 @@
 import pygame
 
 from config import *
+from Setup import *
+
 
 class Button():
     """Created a button to place on the screen."""
@@ -12,6 +14,7 @@ class Button():
         img_height = image.get_height()
 
         self.image = pygame.transform.scale(image, (int(img_width*scale), int(img_height*scale)))
+        self.image.set_colorkey((0,0,0))
         self.rect = self.image.get_rect( center = (x,y) )
 
         # Text
@@ -45,3 +48,4 @@ class Button():
 
 def real_button_action():
     print('real_button_action')
+    rocks = setup.make_random_rocks(number_of_rocks)

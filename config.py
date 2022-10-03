@@ -9,7 +9,7 @@ winWidth =  1600
 music_on = False
 
 # Graphics
-button_image_location = 'Graphics/Blue_button.png'
+button_image_location = 'Graphics/Blue_button2.png'
 
 # Player parameters
 player_start_mass = 4e15 #kg
@@ -27,13 +27,13 @@ collision_slow_percent = .99
 grav_threshold = 20
 
 # Space Rock parameters
-number_of_rocks = 1
+number_of_rocks = 10
 helper_force =  5000
 small_rock =    500000
 med_rock =      50000000000000
 big_rock =      100000000000000
 MASSES = (small_rock, med_rock, big_rock)
-rock_start_velocity = (0,500)
+rock_start_velocity = (0,2)
 
 # Map Boudaries
 outer_left = -3*winWidth
