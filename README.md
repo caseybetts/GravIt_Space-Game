@@ -1,4 +1,4 @@
-# SpaceRock
+# GravIt!
 
 ## A space game where you grab space rocks and grow your gravitational influence
 
