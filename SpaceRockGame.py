@@ -39,6 +39,11 @@ class Space_Rock_Program():
         # Font
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
 
+        # Button set up
+        button_image = pygame.image.load(button_image_location)
+        self.real_button = Button(winWidth/2, (winHeight/2) - 100, .7, button_image, "Real Gravity")
+        self.far_button = Button(winWidth/2, (winHeight/2) + 100, .7, button_image, "Far Gravity")
+
         # Create a Game_Setup object
         self.setup = Game_Setup()
 
@@ -53,16 +58,15 @@ class Space_Rock_Program():
                     player_start_size_y
                     )
 
-
+        # Create radar point for the player
+        self.player_point = RadarPoint(0)
 
         # Create Radar screen surface
         self.radar_screen = pygame.Surface(((outer_right-outer_left)*radar_reduction,(outer_bottom-outer_top)*radar_reduction))
         self.radar_screen.fill((20,20,20))
         self.radar_screen.set_alpha(128)
 
-        # Create variables for number of rocks left, game state and screen position
-
-        self.game_active = True
+        # Create variables for screen position
         self.screen_col = 0
         self.screen_row = 0
 
@@ -116,10 +120,12 @@ class Space_Rock_Program():
         """ Runs the first level of the game"""
         print("Running game_loop with gmae level:", self.game_level)
 
+        # Create sprite group of space rocks
         self.rocks = self.setup.make_random_rocks(number_of_rocks)
 
-        # Create radar points and add them to a sprite group
+        # Create sprite group of radar points
         self.point_group = self.setup.make_radar_points(number_of_rocks)
+        self.point_group.add(self.player_point)
 
         # Create sprite group for all sprites
         self.all_sprites = pygame.sprite.Group()
@@ -127,11 +133,13 @@ class Space_Rock_Program():
             self.all_sprites.add(rock)
         self.all_sprites.add(self.blob)
 
-        # Create radar point for the player
-        player_point = RadarPoint(0)
-        self.point_group.add(player_point)
-
+        # Create variable for the number of rocks remaining
         self.remaining_rocks = len(self.rocks.sprites())
+
+        # Set the player position and velocity
+        self.blob.rect.left = winWidth/2
+        self.blob.rect.top = winHeight/2
+        self.blob.velocity = [0,0]
 
         while self.game_level == 1:
 
@@ -141,7 +149,7 @@ class Space_Rock_Program():
                 # Check if a key is currently pressed
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.cleanup()
+                        self.game_level = -1
                     elif event.key == K_d:
                         self.game_level = 0
                     else:
@@ -153,7 +161,7 @@ class Space_Rock_Program():
                     self.key_down_flag = False
 
                 elif event.type == pygame.QUIT:
-                    self.cleanup()
+                    self.game_level = -1
 
             # Get the set of keys pressed
             pressed_keys = pygame.key.get_pressed()
@@ -286,22 +294,22 @@ class Space_Rock_Program():
                 # Check if a key is currently pressed
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.cleanup()
+                        self.game_level = -1
                 elif event.type == pygame.QUIT:
-                    self.cleanup()
+                    self.game_level = -1
 
             self.screen.blit(self.bg_image,(0,0)) # Blit the background
-            self.screen.blit(real_button.image, (real_button.rect.x, real_button.rect.y))
-            self.screen.blit(real_button.text, real_button.text_rect)
+            self.screen.blit(self.real_button.image, (self.real_button.rect.x, self.real_button.rect.y))
+            self.screen.blit(self.real_button.text, self.real_button.text_rect)
 
-            self.screen.blit(far_button.image, (far_button.rect.x, far_button.rect.y))
-            self.screen.blit(far_button.text, far_button.text_rect)
+            self.screen.blit(self.far_button.image, (self.far_button.rect.x, self.far_button.rect.y))
+            self.screen.blit(self.far_button.text, self.far_button.text_rect)
 
             # Have buttons check if they are clicked
-            if real_button.check_mouse():
+            if self.real_button.check_mouse():
                 self.game_level = 1
                 print('real button')
-            elif far_button.check_mouse():
+            elif self.far_button.check_mouse():
                 print("far button")
 
             # Finish the loop with the framrate time and pygame flip
@@ -309,7 +317,6 @@ class Space_Rock_Program():
             pygame.display.flip()
 
     def program_loop(self):
-
 
         # Play background music
         if music_on:
@@ -323,8 +330,11 @@ class Space_Rock_Program():
                 self.game_loop()
 
             # Display the menu screen
-            else:
+            elif self.game_level == 0:
                 self.menu_loop()
+
+            else:
+                self.cleanup()
 
     def cleanup(self):
         pygame.quit()
@@ -333,13 +343,6 @@ class Space_Rock_Program():
 
 if __name__ == "__main__":
 
-
-
-    # Button set up
-    button_image = pygame.image.load(button_image_location)
-    real_button = Button(winWidth/2, (winHeight/2) - 100, .7, button_image, "Real Gravity")
-    far_button = Button(winWidth/2, (winHeight/2) + 100, .7, button_image, "Far Gravity")
-
-    # Create game object and run
-    game = Space_Rock_Program()
-    game.program_loop()
+    # Create program object and run
+    program = Space_Rock_Program()
+    program.program_loop()
