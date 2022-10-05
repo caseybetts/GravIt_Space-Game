@@ -82,28 +82,18 @@ def pickle_ball(target,winHeight):
     target.rect.move_ip(target.velocity[0], target.velocity[1])
 
 
-def radar_coord_conversion(map_x, map_y, reduction_factor, radar_left, radar_top, map_left, map_top):
+def radar_coord_conversion(map_x, map_y, reduction_factor, radar_rect, map_rect):
     # Function will convert the actual x and y coordinates for coordinates on the rador screen
-    radar_x = map_x - map_left
+    radar_x = map_x - map_rect.left
     radar_x *= reduction_factor
-    radar_x += radar_left
+    radar_x += radar_rect.left
 
-    radar_y = map_y - map_top
+    radar_y = map_y - map_rect.top
     radar_y *= reduction_factor
-    radar_y += radar_top
+    radar_y += radar_rect.top
 
     return [radar_x, radar_y]
 
-def display_coord_conversion(map_x, map_y, scrn_col, scrn_row):
-    # This converts the coordinate from the map to what should be displayed based on what area of the map is being shown
-
-    # Calculate the display x coord based on the screen col
-    disp_x = map_x + (winWidth * scrn_col)
-
-    # Calculate the display y coord based on the screen row
-    disp_y = map_y + (winWidth * scrn_row)
-
-    return [disp_x,disp_y]
 
 def momentum(m1,v1,m2,v2):
     # returns the final velocity of two objects colliding with eachother

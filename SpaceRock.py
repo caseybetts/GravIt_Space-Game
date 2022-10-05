@@ -45,19 +45,20 @@ class SpaceRock(pygame.sprite.Sprite):
             self.surface = pygame.transform.scale(self.surface, (120,120))
             self.surface.set_colorkey((0,0,0), RLEACCEL)
 
-    def update(self, all_sprites, scrn_col, scrn_row):
+    def update(self, all_sprites, map_rect):
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
+
         # Give the rocks a little force to keep them from clustering at the edges
         if self.rect[0] < 0:
             force[0]+= helper_force
-        elif self.rect[0] > winWidth:
+        elif self.rect[0] > 1000:
             force[0]-= helper_force
 
         if self.rect[1] < 0:
             force[1]+= helper_force
-        elif self.rect[1] > winHeight:
+        elif self.rect[1] > 1000:
             force[1]-= helper_force
 
         # Update acceleration
@@ -71,15 +72,7 @@ class SpaceRock(pygame.sprite.Sprite):
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
         # Remove space rock if it gets too far away
-        if self.rect.left < outer_left or self.rect.right > outer_right:
+        if self.rect.left < map_rect.left or self.rect.right > map_rect.right:
             self.kill()
-        if self.rect.top < outer_top or self.rect.bottom > outer_bottom:
+        if self.rect.top < map_rect.top or self.rect.bottom > map_rect.bottom:
             self.kill()
-
-        ##################### For Testing: Constrain the rocks to the window ##################
-        # if self.rect.left < 0: self.velocity[0] = 2
-        # if self.rect.right > winWidth: self.velocity[0] = -2
-        # if self.rect.top < 0: self.velocity[1] = 2
-        # if self.rect.bottom > winHeight: self.velocity[1] = -2
-
-        return [self.rect.left+(-scrn_col*winWidth), self.rect.top + (-scrn_row*winHeight)]

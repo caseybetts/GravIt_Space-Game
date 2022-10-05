@@ -19,19 +19,19 @@ from ThrustSprite import ThrustSprite
 
 class Player(pygame.sprite.Sprite):
     """This is the player sprite"""
-    def __init__(self, mass, x_pos, y_pos, x_velocity, y_velocity, x_size, y_size):
+    def __init__(self, mass, x_size, y_size):
         super(Player,self).__init__()
 
         # Mass, Position and Velocity parameters initialized
         self.mass = mass
-        self.velocity = [x_velocity,y_velocity]
+        self.velocity = [0,0]
         self.size = [x_size, y_size]
         self.id = 0
         # Create pygame Surface
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
         self.surface = pygame.transform.scale(self.surface, self.size)
         self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = (x_pos,y_pos) )
+        self.rect = self.surface.get_rect( center = (0,0) )
 
         # Thrust sound and group
         self.thrust_sound = pygame.mixer.Sound("audio/thrust.flac")
@@ -54,7 +54,7 @@ class Player(pygame.sprite.Sprite):
         return self.mass*percent_ejection*thrust_acc
 
     # Move the sprite based on user keypresses
-    def update(self, all_sprites, key_down_flag, pressed_keys, scrn_col, scrn_row):
+    def update(self, all_sprites, key_down_flag, pressed_keys):
 
         x_thrust = 0
         y_thrust = 0
@@ -76,13 +76,14 @@ class Player(pygame.sprite.Sprite):
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
+
         # Update acceleration
         acceleration_x = (force[0]+x_thrust)/(self.mass*framerate*framerate)
         acceleration_y = (force[1]+y_thrust)/(self.mass*framerate*framerate)
+
         # Update object's velocity
         self.velocity[0] += acceleration_x
         self.velocity[1] += acceleration_y
+
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
-
-        return [self.rect.left + (-scrn_col*winWidth), self.rect.top + (-scrn_row*winHeight)]

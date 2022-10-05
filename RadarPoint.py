@@ -10,6 +10,7 @@ class RadarPoint(pygame.sprite.Sprite):
     def __init__(self, id):
         super(RadarPoint, self).__init__()
         self.id = id
+
         # Create pygame Surface
         self.surface = pygame.Surface((1,1))
         self.rect = self.surface.get_rect()
@@ -29,17 +30,15 @@ class RadarPoint(pygame.sprite.Sprite):
             self.surface.fill("Red")
 
 
-    def update(self, rocks, player_x, player_y):
+    def update(self, rocks, player_rect, radar_rect, map_rect):
         # If the point is the player
         if self.id == 0:
             player_coords = radar_coord_conversion(
-                                player_x,
-                                player_y,
+                                player_rect.left,
+                                player_rect.top,
                                 radar_reduction,
-                                radar_left,
-                                radar_top,
-                                outer_left,
-                                outer_top
+                                radar_rect,
+                                map_rect
                                 )
             self.rect[0] = player_coords[0]
             self.rect[1] = player_coords[1]
@@ -50,13 +49,11 @@ class RadarPoint(pygame.sprite.Sprite):
                 if self.id == rock.id:
                     alive = True
                     rock_coords = radar_coord_conversion(
-                                    rock.rect[0],
-                                    rock.rect[1],
+                                    rock.rect.left,
+                                    rock.rect.top,
                                     radar_reduction,
-                                    radar_left,
-                                    radar_top,
-                                    outer_left,
-                                    outer_top
+                                    radar_rect,
+                                    map_rect
                                     )
                     self.rect[0] = rock_coords[0]
                     self.rect[1] = rock_coords[1]

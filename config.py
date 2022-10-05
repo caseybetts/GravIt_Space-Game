@@ -2,8 +2,6 @@
 
 # Screen parameters
 framerate = 35
-winHeight = 1000
-winWidth =  1600
 
 # Sound
 music_on = False
@@ -13,10 +11,6 @@ button_image_location = 'Graphics/Blue_button2.png'
 
 # Player parameters
 player_start_mass = 4e15 #kg
-player_start_pos_x = winWidth/5
-player_start_pos_y = winHeight/2
-player_start_velocity_x = -2
-player_start_velocity_y = 0
 player_start_size_x = 20
 player_start_size_y = 20
 
@@ -35,15 +29,9 @@ big_rock =      100000000000000
 MASSES = (small_rock, med_rock, big_rock)
 rock_start_velocity = (0,2)
 
-# Map Boudaries
-outer_left = -3*winWidth
-outer_right = 4*winWidth
-outer_top = -3*winHeight
-outer_bottom = 4*winHeight
-map_width = outer_right-outer_left
-map_height = outer_bottom-outer_top
+# Set how many screens the map consists of
+map_size_width = 7
+map_size_height = 7
 
 # Radar coords
 radar_reduction = .04
-radar_left = winWidth-20-(map_width*radar_reduction)
-radar_top = winHeight-20-(map_height*radar_reduction)

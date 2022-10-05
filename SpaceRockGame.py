@@ -11,7 +11,6 @@ from Calculations import (
     find_force,
     radar_coord_conversion,
     momentum,
-    display_coord_conversion
     )
 from config import *
 from SpaceRock import *
@@ -30,8 +29,9 @@ class Space_Rock_Program():
     def __init__(self):
 
         # Create a display window
-        self.screen = pygame.display.set_mode((winWidth,winHeight))
+        self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         pygame.display.set_caption("GravIt!")
+        self.win_width,self.win_height = self.screen.get_size()
 
         # Create a clock to control frames per second
         self.clock = pygame.time.Clock()
@@ -41,8 +41,8 @@ class Space_Rock_Program():
 
         # Button set up
         button_image = pygame.image.load(button_image_location)
-        self.real_button = Button(winWidth/2, (winHeight/2) - 100, .7, button_image, "Real Gravity")
-        self.far_button = Button(winWidth/2, (winHeight/2) + 100, .7, button_image, "Far Gravity")
+        self.real_button = Button(self.win_width/2, (self.win_height/2) - 100, .7, button_image, "Real Gravity")
+        self.far_button = Button(self.win_width/2, (self.win_height/2) + 100, .7, button_image, "Far Gravity")
 
         # Create a Game_Setup object
         self.setup = Game_Setup()
@@ -50,10 +50,6 @@ class Space_Rock_Program():
         # Create the player sprite
         self.blob = Player(
                     player_start_mass,
-                    player_start_pos_x,
-                    player_start_pos_y,
-                    player_start_velocity_x,
-                    player_start_velocity_y,
                     player_start_size_x,
                     player_start_size_y
                     )
@@ -61,10 +57,27 @@ class Space_Rock_Program():
         # Create radar point for the player
         self.player_point = RadarPoint(0)
 
+        # Calculate map boundaries in pixels based on number of screens map extends to
+        self.map_left_boundary = -(int(map_size_width/2))*self.win_width
+        self.map_right_boundary = ((int(map_size_width/2))+1)*self.win_width
+        self.map_top_boundary =-(int(map_size_height/2))*self.win_height
+        self.map_bottom_boundary = ((int(map_size_height/2))+1)*self.win_height
+        map_width = self.map_right_boundary - self.map_left_boundary # In pixels
+        map_height = self.map_bottom_boundary - self.map_top_boundary # In pixels
+
+        # Create pygame map surface
+        self.map = pygame.Surface((map_width, map_height))
+        self.map_rect = self.map.get_rect(left = self.map_left_boundary, top = self.map_top_boundary)
+
+        # Calculate radar coords
+        radar_left = self.win_width-20-(map_width*radar_reduction)
+        radar_top = self.win_height-20-(map_height*radar_reduction)
+
         # Create Radar screen surface
-        self.radar_screen = pygame.Surface(((outer_right-outer_left)*radar_reduction,(outer_bottom-outer_top)*radar_reduction))
-        self.radar_screen.fill((20,20,20))
+        self.radar_screen = pygame.Surface(((map_width)*radar_reduction,(map_height)*radar_reduction))
+        self.radar_screen.fill((25,25,25))
         self.radar_screen.set_alpha(128)
+        self.radar_rect = self.radar_screen.get_rect(left = radar_left, top = radar_top)
 
         # Create variables for screen position
         self.screen_col = 0
@@ -72,7 +85,7 @@ class Space_Rock_Program():
 
         # Create background image surface
         self.bg_image = pygame.image.load("Graphics/bg_stars5.jpg")
-        self.bg_image = pygame.transform.scale(self.bg_image, (winWidth,winHeight))
+        self.bg_image = pygame.transform.scale(self.bg_image, (self.win_width,self.win_height))
 
         # Import background music
         self.bg_music = pygame.mixer.Sound("audio/background_music.wav")
@@ -85,43 +98,47 @@ class Space_Rock_Program():
         """Given the player's position, this determines the column and row of the screen on the map."""
 
         # Determine screen column
-        if player_rect.left < -2*winWidth:
+        if player_rect.left < -2*self.win_width:
             self.screen_col = -3
-        elif player_rect.left < -winWidth:
+        elif player_rect.left < -self.win_width:
             self.screen_col = -2
         elif player_rect.left < 0:
             self.screen_col = -1
-        elif player_rect.left < winWidth:
+        elif player_rect.left < self.win_width:
             self.screen_col = 0
-        elif player_rect.left < 2*winWidth:
+        elif player_rect.left < 2*self.win_width:
             self.screen_col = 1
-        elif player_rect.left < 3*winWidth:
+        elif player_rect.left < 3*self.win_width:
             self.screen_col = 2
         else:
             self.screen_col = 3
 
         # Determine screen column
-        if player_rect.top < -2*winHeight:
+        if player_rect.top < -2*self.win_height:
             self.screen_row = -3
-        elif player_rect.top < -winHeight:
+        elif player_rect.top < -self.win_height:
             self.screen_row = -2
         elif player_rect.top < 0:
             self.screen_row = -1
-        elif player_rect.top < winHeight:
+        elif player_rect.top < self.win_height:
             self.screen_row = 0
-        elif player_rect.top < 2*winHeight:
+        elif player_rect.top < 2*self.win_height:
             self.screen_row = 1
-        elif player_rect.top < 3*winHeight:
+        elif player_rect.top < 3*self.win_height:
             self.screen_row = 2
         else:
             self.screen_row = 3
 
     def game_loop(self):
-        """ Runs the first level of the game"""
-        print("Running game_loop with gmae level:", self.game_level)
+        """ Runs the loop for the game"""
 
         # Create sprite group of space rocks
-        self.rocks = self.setup.make_random_rocks(number_of_rocks)
+        self.rocks = self.setup.make_random_rocks(
+                                            number_of_rocks,
+                                            [self.map_left_boundary,
+                                            self.map_right_boundary],
+                                            [self.map_top_boundary,
+                                            self.map_bottom_boundary])
 
         # Create sprite group of radar points
         self.point_group = self.setup.make_radar_points(number_of_rocks)
@@ -137,8 +154,8 @@ class Space_Rock_Program():
         self.remaining_rocks = len(self.rocks.sprites())
 
         # Set the player position and velocity
-        self.blob.rect.left = winWidth/2
-        self.blob.rect.top = winHeight/2
+        self.blob.rect.left = self.win_width/2
+        self.blob.rect.top = self.win_height/2
         self.blob.velocity = [0,0]
 
         while self.game_level == 1:
@@ -209,59 +226,68 @@ class Space_Rock_Program():
                 self.remaining_rocks = len(self.rocks.sprites())
 
 
-            ## Update coordinate for: screen and radar points
-            self.update_screen_position(self.blob.rect) # Update screen position
+            # Update the coloumn and row of the screen on the map
+            self.update_screen_position(self.blob.rect)
+
+            # Update the position of the radare points
             self.point_group.update(
                             self.rocks,
-                            self.blob.rect.left,
-                            self.blob.rect.top) # Update the radar point positions
+                            self.blob.rect,
+                            self.radar_rect,
+                            self.map_rect) # Update the radar point positions
             self.blob.thrust_group.update() # Update thrust group
 
 
             ## Display: background, player, space rocks, thrust objects, radar screen and text
             self.screen.blit(self.bg_image,(0,0)) # Blit the background
 
-            self.screen.blit(self.blob.surface, self.blob.update(
-                                            self.all_sprites,
-                                            self.key_down_flag,
-                                            pressed_keys,
-                                            self.screen_col,
-                                            self.screen_row)) # Update/display player
-            # Update/display space rocks
+            # Update the player position
+            self.blob.update(
+                            self.all_sprites,
+                            self.key_down_flag,
+                            pressed_keys,
+                            )
+
+            # Blit the player to the screen
+            self.screen.blit(self.blob.surface,[
+                            self.blob.rect.left + (-self.screen_col*self.win_width),
+                            self.blob.rect.top + (-self.screen_row*self.win_height)])
+
+            # Update and Blit space rocks
             for entity in self.rocks:
+                entity.update(self.all_sprites, self.map_rect)
                 self.screen.blit(
-                            entity.surface,
-                            entity.update(
-                                    self.all_sprites,
-                                    self.screen_col,
-                                    self.screen_row))
+                            entity.surface,[
+                            entity.rect.left + (-self.screen_col*self.win_width),
+                            entity.rect.top + (-self.screen_row*self.win_height)])
 
             # Blit the thrust group with adjusted coordinates
             for sprite in self.blob.thrust_group:
-                # Change coordinates based on the screen position
-                thr_x = sprite.rect.left + (-self.screen_col*winWidth)
-                thr_y = sprite.rect.top + (-self.screen_row*winHeight)
-
-                # Blit the thrust sprite on the screen
-                self.screen.blit(sprite.surface,(thr_x,thr_y))
+                self.screen.blit(
+                            sprite.surface,[
+                            sprite.rect.left + (-self.screen_col*self.win_width),
+                            sprite.rect.top + (-self.screen_row*self.win_height)])
 
             # Blit the radar screen on the window
-            self.screen.blit(self.radar_screen,(radar_left,radar_top))
-            screen_position = radar_coord_conversion( self.screen_col*winWidth,
-                                        self.screen_row*winHeight,
+            self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
+
+            # Calculate the display position of the shadow of the active screen on the radar
+            screen_position = radar_coord_conversion(
+                                        self.screen_col*self.win_width,
+                                        self.screen_row*self.win_height,
                                         radar_reduction,
-                                        radar_left,
-                                        radar_top,
-                                        outer_left,
-                                        outer_top
+                                        self.radar_rect,
+                                        self.map_rect
                                         )
+
+            # Draw the shadow of the active screen on the radar screen
             pygame.draw.rect(
                             self.screen,
                             (40,40,40),
                             (   screen_position[0],
                                 screen_position[1],
-                                winWidth*radar_reduction,
-                                winHeight*radar_reduction)
+                                self.win_width*radar_reduction,
+                                self.win_height*radar_reduction)
                             )
 
             # Draw the radar points on the screen
