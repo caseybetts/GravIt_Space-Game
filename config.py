@@ -4,7 +4,7 @@
 framerate = 35
 
 # Sound
-music_on = False
+music_on = True
 
 # Graphics
 button_image_location = 'Graphics/Blue_button2.png'

@@ -2,7 +2,6 @@
 # By Casey Betts
 
 # mustard sun by Martin Cee (softmartin) (c) copyright 2022 Licensed under a Creative Commons Attribution Noncommercial  (3.0) license. http://dig.ccmixter.org/files/softmartin/65383 Ft: subliminal
-import math
 import pygame
 import random
 
@@ -11,6 +10,7 @@ from Calculations import (
     find_force,
     radar_coord_conversion,
     momentum,
+    exponent_split
     )
 from config import *
 from SpaceRock import *
@@ -295,8 +295,9 @@ class Space_Rock_Program():
                 self.screen.blit(entity.surface, entity.rect)
 
             # Display the current mass of the player
+            disp_mass = exponent_split(self.blob.mass)
             mass_text_surf = self.font.render(
-                                        f'Current Mass: {math.trunc(self.blob.mass)} kg              Space Rocks Remaining: {self.remaining_rocks}',
+                                        f'Current Mass: {round(disp_mass[0],2)} e {disp_mass[1]} kg              Space Rocks Remaining: {self.remaining_rocks}',
                                         False,
                                         (64,64,64))
             self.screen.blit(mass_text_surf,(10,10))

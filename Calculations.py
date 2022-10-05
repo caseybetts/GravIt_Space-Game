@@ -99,3 +99,18 @@ def momentum(m1,v1,m2,v2):
     # returns the final velocity of two objects colliding with eachother
     final_velocity = (m1*v1 + m2*v2)/(m1+m2)
     return final_velocity
+
+def exponent_split(num):
+    """Convert exponential notation to value and exponent"""
+    count = 0
+    if num <= 0:
+        return [0,0]
+    elif num > 1:
+        while num > 10:
+            num/=10
+            count+=1
+    else:
+        while num < 1:
+            num*=10
+            count-=1
+    return [num, count]
