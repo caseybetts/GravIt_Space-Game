@@ -43,8 +43,9 @@ class Space_Rock_Program():
 
         # Button set up
         button_image = pygame.image.load(button_image_location)
-        self.real_button = Button(self.win_width/2, (self.win_height/2) - 100, .7, button_image, "Real Gravity")
-        self.far_button = Button(self.win_width/2, (self.win_height/2) + 100, .7, button_image, "Far Gravity")
+        self.real_button = Button(self.win_width/2, (self.win_height/2) - 100, .7, "Real Gravity", "Black", button_image)
+        self.far_button = Button(self.win_width/2, (self.win_height/2) + 100, .7, "Far Gravity", "Black", button_image)
+        self.exit_button = Button(self.win_width - 20, 20, .5, "X", (64,64,64))
 
         # Create a Game_Setup object
         self.setup = Game_Setup()
@@ -137,13 +138,13 @@ class Space_Rock_Program():
     def set_level_parameters(self):
 
         if self.game_level == 1:
-            self.number_of_rocks = 15
+            self.number_of_rocks = 90
             self.win_mass = 14e15
         elif self.game_level == 2:
             self.number_of_rocks = 50
             self.win_mass = 24e15
         elif self.game_level == 3:
-            self.number_of_rocks = 100
+            self.number_of_rocks = 20
             self.win_mass = 34e15
 
         self.level_text_count = 100
@@ -331,10 +332,17 @@ class Space_Rock_Program():
                                         (64,64,64))
             self.screen.blit(mass_text_surf,(10,10))
 
+            # Blit the exit button
+            self.screen.blit(self.exit_button.text, self.exit_button.text_rect)
+
             # Display the current level at start of level
             if self.level_text_count > 0:
                 self.screen.blit(level_text,((self.win_width-level_text.get_width())/2, (self.win_height-level_text.get_height())/2))
                 self.level_text_count -= 1
+
+            # Check exit button for a click
+            if self.exit_button.check_mouse():
+                self.game_level = -1
 
             ## Changing game state
             if not self.rocks.sprites():  # If there are no more space rocks
@@ -363,20 +371,29 @@ class Space_Rock_Program():
                         self.game_level = 4
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
+            # Blit the background
+            self.screen.blit(self.bg_image,(0,0))
 
-            self.screen.blit(self.bg_image,(0,0)) # Blit the background
+            # Blit the real_button image and text
             self.screen.blit(self.real_button.image, (self.real_button.rect.x, self.real_button.rect.y))
             self.screen.blit(self.real_button.text, self.real_button.text_rect)
 
+            # Blit the far button image and text
             self.screen.blit(self.far_button.image, (self.far_button.rect.x, self.far_button.rect.y))
             self.screen.blit(self.far_button.text, self.far_button.text_rect)
 
+            # Blit the exit button
+            self.screen.blit(self.exit_button.text, self.exit_button.text_rect)
+
             # Have buttons check if they are clicked
+            if self.exit_button.check_mouse():
+                self.game_level = -1
+
             if self.real_button.check_mouse():
                 self.game_level = 1
-                print('real button')
+
             elif self.far_button.check_mouse():
-                print("far button")
+                self.game_level = 1
 
             # Finish the loop with the framrate time and pygame flip
             self.clock.tick(framerate)
@@ -390,6 +407,9 @@ class Space_Rock_Program():
         # Display the winning message
         winning_message = self.win_font.render('You Win!', False,("#8eb8d4"))
         self.screen.blit(winning_message,((self.win_width-winning_message.get_width())/2, (self.win_height-winning_message.get_height())/2))
+
+        # Blit the exit button
+        self.screen.blit(self.exit_button.text, self.exit_button.text_rect)
 
         while self.game_level > 0:
 
@@ -413,6 +433,10 @@ class Space_Rock_Program():
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
 
+            # Have buttons check if they are clicked
+            if self.exit_button.check_mouse():
+                self.game_level = -1
+                
             # Finish the loop with the framrate time and pygame flip
             self.clock.tick(framerate)
             pygame.display.flip()
