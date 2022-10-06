@@ -40,6 +40,7 @@ class Space_Rock_Program():
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
         self.level_font = pygame.font.Font(pygame.font.get_default_font(), 150)
         self.win_font = pygame.font.Font(pygame.font.get_default_font(), 150)
+        self.inst_font = pygame.font.Font(pygame.font.get_default_font(), 30)
 
         # Button set up
         button_image = pygame.image.load(button_image_location)
@@ -359,6 +360,18 @@ class Space_Rock_Program():
     def menu_loop(self):
         """ Displays the menu with buttons for input from the user"""
 
+        # Display the winning message
+        instruction_text1 = self.inst_font.render("Used the arrow keys to expel matter and propel yourself through",
+                                                False,
+                                                (110,100,100))
+
+        instruction_text2 = self.inst_font.render("the field of space rocks. If you can collide with a rock you can eat it and",
+                                                False,
+                                                (110,100,100))
+
+        instruction_text3 = self.inst_font.render("increase your mass. Grow your mass enough to get to the next level!",
+                                                False,
+                                                (110,100,100))
         while self.game_level == 0:
 
             for event in pygame.event.get():
@@ -373,6 +386,11 @@ class Space_Rock_Program():
                     self.game_level = -1
             # Blit the background
             self.screen.blit(self.bg_image,(0,0))
+
+            # Blit the instruction text
+            self.screen.blit(instruction_text1,(self.win_width/4, self.win_height - 200))
+            self.screen.blit(instruction_text2,(self.win_width/4 - 20, self.win_height - 160))
+            self.screen.blit(instruction_text3,(self.win_width/4, self.win_height - 120))
 
             # Blit the real_button image and text
             self.screen.blit(self.real_button.image, (self.real_button.rect.x, self.real_button.rect.y))
@@ -436,12 +454,13 @@ class Space_Rock_Program():
             # Have buttons check if they are clicked
             if self.exit_button.check_mouse():
                 self.game_level = -1
-                
+
             # Finish the loop with the framrate time and pygame flip
             self.clock.tick(framerate)
             pygame.display.flip()
 
     def cleanup(self):
+        """ Exits pygame and ends the program """
         print("running cleanup")
         pygame.quit()
         exit()

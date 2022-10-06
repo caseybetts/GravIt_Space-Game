@@ -23,7 +23,7 @@ class Button():
         self.font = pygame.font.Font(pygame.font.get_default_font(), int(60*scale))
         self.text = self.font.render(text,False, text_color)
 
-        # Create a rect attribute based on the image. If no image, then based on the text 
+        # Create a rect attribute based on the image. If no image, then based on the text
         if image:
             self.text_rect = self.text.get_rect(
                             center = (  self.rect.x + self.image.get_width()/2,
