@@ -7,12 +7,13 @@ from Setup import *
 
 
 class Button():
-    """Created a button to place on the screen."""
+    """Create a button to place on the screen."""
 
     def __init__(self, x, y, scale, image, text):
         img_width = image.get_width()
         img_height = image.get_height()
 
+        # Load the image
         self.image = pygame.transform.scale(image, (int(img_width*scale), int(img_height*scale)))
         self.image.set_colorkey((0,0,0))
         self.rect = self.image.get_rect( center = (x,y) )

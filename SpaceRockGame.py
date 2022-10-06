@@ -31,7 +31,7 @@ class Space_Rock_Program():
         # Create a display window
         self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         pygame.display.set_caption("GravIt!")
-        self.win_width,self.win_height = self.screen.get_size()
+        self.win_width, self.win_height = self.screen.get_size()
 
         # Create a clock to control frames per second
         self.clock = pygame.time.Clock()
@@ -90,9 +90,11 @@ class Space_Rock_Program():
         # Import background music
         self.bg_music = pygame.mixer.Sound("audio/background_music.wav")
 
-        # Key down flag and game level flag
+        # Variables
         self.key_down_flag = False
+        self.number_of_rocks = 0
         self.game_level = 0
+        self.win_mass = 0
 
     def update_screen_position(self, player_rect):
         """Given the player's position, this determines the column and row of the screen on the map."""
@@ -129,19 +131,34 @@ class Space_Rock_Program():
         else:
             self.screen_row = 3
 
-    def game_loop(self):
+    def set_level_parameters(self, level):
+
+        if level == 1:
+            self.number_of_rocks = 15
+            self.win_mass = 14e15
+        elif level == 2:
+            self.number_of_rocks = 50
+            self.win_mass = 24e15
+        elif level == 3:
+            self.number_of_rocks = 100
+            self.win_mass = 34e15
+
+    def game_loop(self, level):
         """ Runs the loop for the game"""
+
+        # Set the parameters for the current game level
+        self.set_level_parameters(level)
 
         # Create sprite group of space rocks
         self.rocks = self.setup.make_random_rocks(
-                                            number_of_rocks,
+                                            self.number_of_rocks,
                                             [self.map_left_boundary,
                                             self.map_right_boundary],
                                             [self.map_top_boundary,
                                             self.map_bottom_boundary])
 
         # Create sprite group of radar points
-        self.point_group = self.setup.make_radar_points(number_of_rocks)
+        self.point_group = self.setup.make_radar_points(self.number_of_rocks)
         self.point_group.add(self.player_point)
 
         # Create sprite group for all sprites
@@ -158,7 +175,7 @@ class Space_Rock_Program():
         self.blob.rect.top = self.win_height/2
         self.blob.velocity = [0,0]
 
-        while self.game_level == 1:
+        while self.game_level == level:
 
             # Loop through all the current pygame events in the queue
             for event in pygame.event.get():
@@ -169,6 +186,8 @@ class Space_Rock_Program():
                         self.game_level = -1
                     elif event.key == K_d:
                         self.game_level = 0
+                    elif event.key == K_m:
+                        self.blob.mass *= 1.1
                     else:
                         # Change the key down flag to True
                         self.key_down_flag = True
@@ -239,7 +258,9 @@ class Space_Rock_Program():
 
 
             ## Display: background, player, space rocks, thrust objects, radar screen and text
-            self.screen.blit(self.bg_image,(0,0)) # Blit the background
+
+            # Blit the background
+            self.screen.blit(self.bg_image,(0,0))
 
             # Update the player position
             self.blob.update(
@@ -302,10 +323,13 @@ class Space_Rock_Program():
                                         (64,64,64))
             self.screen.blit(mass_text_surf,(10,10))
 
-
             ## Changing game state
-            if not self.rocks.sprites():
+            if not self.rocks.sprites():  # If there are no more space rocks
                 self.game_level = 0
+
+            # Check if your mass is great enough to win the level
+            if self.blob.mass > self.win_mass:
+                self.game_level += 1
 
             # Finish the loop with the framrate time and pygame flip
             self.clock.tick(framerate)
@@ -322,6 +346,8 @@ class Space_Rock_Program():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.game_level = -1
+                    elif event.key == K_w:
+                        self.game_level = 4
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
 
@@ -343,6 +369,49 @@ class Space_Rock_Program():
             self.clock.tick(framerate)
             pygame.display.flip()
 
+    def win_loop(self):
+        """ Displays the congradulations message when you win!"""
+        # Blit the background
+        self.screen.blit(self.bg_image,(0,0))
+
+        # Display the winning message
+        winning_message = self.font.render(
+                                    'You Win!',
+                                    False,
+                                    ("Yellow"))
+        self.screen.blit(winning_message,((self.win_width-winning_message.get_width())/2, (self.win_height-winning_message.get_height())/2))
+
+        while self.game_level > 0:
+
+            # Iterate through all the current pygame events in the queue
+            for event in pygame.event.get():
+
+                # Check if a key is currently pressed
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.game_level = -1
+                    elif event.key == K_d:
+                        self.game_level = 0
+                    else:
+                        # Change the key down flag to True
+                        self.key_down_flag = True
+
+                elif event.type == pygame.KEYUP:
+                    # Reset the key down flag
+                    self.key_down_flag = False
+
+                elif event.type == pygame.QUIT:
+                    self.game_level = -1
+
+            # Finish the loop with the framrate time and pygame flip
+            self.clock.tick(framerate)
+            pygame.display.flip()
+
+    def cleanup(self):
+        print("running cleanup")
+        pygame.quit()
+        exit()
+
     def program_loop(self):
 
         # Play background music
@@ -350,23 +419,20 @@ class Space_Rock_Program():
             self.bg_music.play(loops = -1)
 
         # Contains the loop to render the game and exit on quit event
-        while True:
+        while self.game_level > -1:
 
-            # Run level 1
-            if self.game_level == 1:
-                self.game_loop()
+            # Run level
+            if self.game_level > 3:
+                self.win_loop()
+
+            elif self.game_level > 0:
+                self.game_loop(self.game_level)
 
             # Display the menu screen
             elif self.game_level == 0:
                 self.menu_loop()
 
-            else:
-                self.cleanup()
-
-    def cleanup(self):
-        pygame.quit()
-        exit()
-        print("cleanup complete")
+        self.cleanup()
 
 if __name__ == "__main__":
 

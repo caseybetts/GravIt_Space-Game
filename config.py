@@ -4,7 +4,7 @@
 framerate = 35
 
 # Sound
-music_on = True
+music_on = False
 
 # Graphics
 button_image_location = 'Graphics/Blue_button2.png'
@@ -21,7 +21,6 @@ collision_slow_percent = .99
 grav_threshold = 20
 
 # Space Rock parameters
-number_of_rocks = 10
 helper_force =  5000
 small_rock =    500000
 med_rock =      50000000000000
