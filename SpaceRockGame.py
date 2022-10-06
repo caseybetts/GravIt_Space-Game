@@ -36,8 +36,10 @@ class Space_Rock_Program():
         # Create a clock to control frames per second
         self.clock = pygame.time.Clock()
 
-        # Font
+        # Fonts
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
+        self.level_font = pygame.font.Font(pygame.font.get_default_font(), 150)
+        self.win_font = pygame.font.Font(pygame.font.get_default_font(), 150)
 
         # Button set up
         button_image = pygame.image.load(button_image_location)
@@ -95,6 +97,7 @@ class Space_Rock_Program():
         self.number_of_rocks = 0
         self.game_level = 0
         self.win_mass = 0
+        self.level_text_count = 0
 
     def update_screen_position(self, player_rect):
         """Given the player's position, this determines the column and row of the screen on the map."""
@@ -131,23 +134,28 @@ class Space_Rock_Program():
         else:
             self.screen_row = 3
 
-    def set_level_parameters(self, level):
+    def set_level_parameters(self):
 
-        if level == 1:
+        if self.game_level == 1:
             self.number_of_rocks = 15
             self.win_mass = 14e15
-        elif level == 2:
+        elif self.game_level == 2:
             self.number_of_rocks = 50
             self.win_mass = 24e15
-        elif level == 3:
+        elif self.game_level == 3:
             self.number_of_rocks = 100
             self.win_mass = 34e15
+
+        self.level_text_count = 100
 
     def game_loop(self, level):
         """ Runs the loop for the game"""
 
         # Set the parameters for the current game level
-        self.set_level_parameters(level)
+        self.set_level_parameters()
+
+        # Create text object for displaying the level
+        level_text = self.level_font.render(f'Level {self.game_level}', False, (84,84,84))
 
         # Create sprite group of space rocks
         self.rocks = self.setup.make_random_rocks(
@@ -323,6 +331,11 @@ class Space_Rock_Program():
                                         (64,64,64))
             self.screen.blit(mass_text_surf,(10,10))
 
+            # Display the current level at start of level
+            if self.level_text_count > 0:
+                self.screen.blit(level_text,((self.win_width-level_text.get_width())/2, (self.win_height-level_text.get_height())/2))
+                self.level_text_count -= 1
+
             ## Changing game state
             if not self.rocks.sprites():  # If there are no more space rocks
                 self.game_level = 0
@@ -375,10 +388,7 @@ class Space_Rock_Program():
         self.screen.blit(self.bg_image,(0,0))
 
         # Display the winning message
-        winning_message = self.font.render(
-                                    'You Win!',
-                                    False,
-                                    ("Yellow"))
+        winning_message = self.win_font.render('You Win!', False,("#8eb8d4"))
         self.screen.blit(winning_message,((self.win_width-winning_message.get_width())/2, (self.win_height-winning_message.get_height())/2))
 
         while self.game_level > 0:
