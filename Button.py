@@ -23,6 +23,10 @@ class Button():
         self.font = pygame.font.Font(pygame.font.get_default_font(), int(60*scale))
         self.text = self.font.render(text,False, text_color)
 
+        # Sound
+        self.button_sound = pygame.mixer.Sound(button_sound_location)
+        self.button_sound.set_volume(.5)
+
         # Create a rect attribute based on the image. If no image, then based on the text
         if image:
             self.text_rect = self.text.get_rect(
@@ -45,6 +49,7 @@ class Button():
         # Check for mouse over and clicked condition
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.button_sound.play()
                 self.clicked = True
                 action = True
 

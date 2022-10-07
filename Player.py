@@ -34,8 +34,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surface.get_rect( center = (0,0) )
 
         # Thrust sound and group
-        self.thrust_sound = pygame.mixer.Sound("audio/thrust.flac")
-        self.thrust_sound.set_volume(.5)
+        self.thrust_sound = pygame.mixer.Sound(thrust_sound_location)
+        self.thrust_sound.set_volume(.75)
         self.thrust_group = pygame.sprite.Group()
 
     def thrust(self, direction):

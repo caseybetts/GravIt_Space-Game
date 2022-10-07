@@ -5,9 +5,13 @@ framerate = 35
 
 # Sound
 music_on = True
+background_music_location = "audio/background_music.wav"
+button_sound_location = "audio/button-gong-sabi.wav"
+thrust_sound_location = "audio/thrust.flac"
 
 # Graphics
 button_image_location = 'Graphics/Blue_button2.png'
+background_image_location = "Graphics/bg_stars5.jpg"
 
 # Player parameters
 player_start_mass = 4e15 #kg

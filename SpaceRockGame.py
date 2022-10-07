@@ -88,11 +88,11 @@ class Space_Rock_Program():
         self.screen_row = 0
 
         # Create background image surface
-        self.bg_image = pygame.image.load("Graphics/bg_stars5.jpg")
+        self.bg_image = pygame.image.load(background_image_location)
         self.bg_image = pygame.transform.scale(self.bg_image, (self.win_width,self.win_height))
 
         # Import background music
-        self.bg_music = pygame.mixer.Sound("audio/background_music.wav")
+        self.bg_music = pygame.mixer.Sound(background_music_location)
 
         # Variables
         self.key_down_flag = False
