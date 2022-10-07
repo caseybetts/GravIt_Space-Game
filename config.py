@@ -12,15 +12,15 @@ thrust_sound_location = "audio/thrust.flac"
 # Graphics
 button_image_location = 'Graphics/Blue_button2.png'
 background_image_location = "Graphics/bg_stars5.jpg"
-
+up_button_image_location = "Graphics/Up_Button.png"
+down_button_image_location = "Graphics/Down_Button.png"
 # Player parameters
 player_start_mass = 4e15 #kg
 player_start_size_x = 20
 player_start_size_y = 20
 
 # Motion parameters
-thrust_acc = 1000000
-percent_ejection = .001
+thrust_acc = 100000
 collision_slow_percent = .99
 grav_threshold = 20
 

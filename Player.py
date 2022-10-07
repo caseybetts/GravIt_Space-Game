@@ -37,6 +37,7 @@ class Player(pygame.sprite.Sprite):
         self.thrust_sound = pygame.mixer.Sound(thrust_sound_location)
         self.thrust_sound.set_volume(.75)
         self.thrust_group = pygame.sprite.Group()
+        self.percent_ejection = .001
 
     def thrust(self, direction):
 
@@ -45,13 +46,13 @@ class Player(pygame.sprite.Sprite):
         self.thrust_group.add(ejected)
 
         # Update the mass
-        self.mass *= 1-percent_ejection
+        self.mass *= 1-self.percent_ejection
 
         # Play a sound
         self.thrust_sound.play()
 
         # Calculate and return the amount of force
-        return self.mass*percent_ejection*thrust_acc
+        return self.mass*self.percent_ejection*thrust_acc
 
     # Move the sprite based on user keypresses
     def update(self, all_sprites, key_down_flag, pressed_keys):

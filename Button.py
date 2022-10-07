@@ -49,7 +49,6 @@ class Button():
         # Check for mouse over and clicked condition
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.button_sound.play()
                 self.clicked = True
                 action = True
 

@@ -47,6 +47,10 @@ class Space_Rock_Program():
         self.real_button = Button(self.win_width/2, (self.win_height/2) - 100, .7, "Real Gravity", "Black", button_image)
         self.far_button = Button(self.win_width/2, (self.win_height/2) + 100, .7, "Far Gravity", "Black", button_image)
         self.exit_button = Button(self.win_width - 20, 20, .5, "X", (64,64,64))
+        up_button_image = pygame.image.load(up_button_image_location)
+        down_button_image = pygame.image.load(down_button_image_location)
+        self.increase_mass_button = Button(30, (self.win_height/4)-40, .25, "", "Blue", up_button_image)
+        self.decrease_mass_button = Button(30, (self.win_height/4)+40, .25, "", "Blue", down_button_image)
 
         # Create a Game_Setup object
         self.setup = Game_Setup()
@@ -325,6 +329,12 @@ class Space_Rock_Program():
             for entity in self.point_group:
                 self.screen.blit(entity.surface, entity.rect)
 
+            # Display the current percent_ejection value
+            percent_ejection_label_surf = self.font.render(f'Thrust Control', False, (64,64,64))
+            percent_ejection_surf = self.font.render(f'{self.blob.percent_ejection}', False, (64,64,64))
+            self.screen.blit(percent_ejection_label_surf, (15, (self.win_height/4)-150))
+            self.screen.blit(percent_ejection_surf,(15,(self.win_height/4)-100))
+
             # Display the current mass of the player
             disp_mass = exponent_split(self.blob.mass)
             mass_text_surf = self.font.render(
@@ -336,10 +346,20 @@ class Space_Rock_Program():
             # Blit the exit button
             self.screen.blit(self.exit_button.text, self.exit_button.text_rect)
 
+            # BLit the mass changing buttons
+            self.screen.blit(self.increase_mass_button.image, self.increase_mass_button.rect)
+            self.screen.blit(self.decrease_mass_button.image, self.decrease_mass_button.rect)
+
             # Display the current level at start of level
             if self.level_text_count > 0:
                 self.screen.blit(level_text,((self.win_width-level_text.get_width())/2, (self.win_height-level_text.get_height())/2))
                 self.level_text_count -= 1
+
+            # Check up/down buttons for mouse click
+            if self.increase_mass_button.check_mouse():
+                self.blob.percent_ejection *= 1.1
+            if self.decrease_mass_button.check_mouse():
+                self.blob.percent_ejection *= .9
 
             # Check exit button for a click
             if self.exit_button.check_mouse():
@@ -408,9 +428,11 @@ class Space_Rock_Program():
                 self.game_level = -1
 
             if self.real_button.check_mouse():
+                self.real_button.button_sound.play()
                 self.game_level = 1
 
             elif self.far_button.check_mouse():
+                self.far_button.button_sound.play()
                 self.game_level = 1
 
             # Finish the loop with the framrate time and pygame flip

@@ -70,12 +70,12 @@ def motion_tester(type):
         print("Invalid motion type. Use 1, 2 or 3.")
 
 
-def pickle_ball(target,winHeight):
+def pickle_ball(target,window_Height):
 
     # Update velocity
     target.velocity[1] -= little_g
 
-    if target.rect.bottom >= winHeight:
+    if target.rect.bottom >= window_Height:
         target.velocity[1] = -1*(target.velocity[1]+1)
 
     # Update position
