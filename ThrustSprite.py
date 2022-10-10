@@ -27,6 +27,13 @@ class ThrustSprite(pygame.sprite.Sprite):
         self.surface.fill(('Green'))
         self.rect = self.surface.get_rect( center = (x_pos,y_pos))
 
+    def display(self, screen, screen_col, screen_row, win_width, win_height):
+
+        # Blit the thrust sprite to the screen
+        screen.blit(self.surface,[
+                        self.rect.left + (-screen_col*win_width),
+                        self.rect.top + (-screen_row*win_height)])
+
     def update(self):
 
         if self.direction == 'left':

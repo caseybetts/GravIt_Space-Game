@@ -144,13 +144,13 @@ class Space_Rock_Program():
 
         if self.game_level == 1:
             self.number_of_rocks = 90
-            self.win_mass = 14e15
+            self.win_mass = 6e15
         elif self.game_level == 2:
             self.number_of_rocks = 50
-            self.win_mass = 24e15
+            self.win_mass = 8e15
         elif self.game_level == 3:
             self.number_of_rocks = 20
-            self.win_mass = 34e15
+            self.win_mass = 10e15
 
         self.level_text_count = 100
 
@@ -283,25 +283,34 @@ class Space_Rock_Program():
                             pressed_keys,
                             )
 
-            # Blit the player to the screen
-            self.screen.blit(self.blob.surface,[
-                            self.blob.rect.left + (-self.screen_col*self.win_width),
-                            self.blob.rect.top + (-self.screen_row*self.win_height)])
+            # BLit the player on the screen
+            self.blob.display(
+                            self.screen,
+                            self.screen_col,
+                            self.screen_row,
+                            self.win_width,
+                            self.win_height)
 
             # Update and Blit space rocks
             for entity in self.rocks:
-                entity.update(self.all_sprites, self.map_rect)
-                self.screen.blit(
-                            entity.surface,[
-                            entity.rect.left + (-self.screen_col*self.win_width),
-                            entity.rect.top + (-self.screen_row*self.win_height)])
+                entity.update(
+                                self.all_sprites,
+                                self.map_rect)
+                entity.display(
+                                self.screen,
+                                self.screen_col,
+                                self.screen_row,
+                                self.win_width,
+                                self.win_height)
 
             # Blit the thrust group with adjusted coordinates
             for sprite in self.blob.thrust_group:
-                self.screen.blit(
-                            sprite.surface,[
-                            sprite.rect.left + (-self.screen_col*self.win_width),
-                            sprite.rect.top + (-self.screen_row*self.win_height)])
+                sprite.display(
+                                self.screen,
+                                self.screen_col,
+                                self.screen_row,
+                                self.win_width,
+                                self.win_height)
 
             # Blit the radar screen on the window
             self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
@@ -327,7 +336,12 @@ class Space_Rock_Program():
 
             # Draw the radar points on the screen
             for entity in self.point_group:
-                self.screen.blit(entity.surface, entity.rect)
+                entity.display(
+                                self.screen,
+                                self.screen_col,
+                                self.screen_row,
+                                self.win_width,
+                                self.win_height)
 
             # Display the current percent_ejection value
             percent_ejection_label_surf = self.font.render(f'Thrust Control', False, (64,64,64))

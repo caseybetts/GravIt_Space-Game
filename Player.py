@@ -54,6 +54,13 @@ class Player(pygame.sprite.Sprite):
         # Calculate and return the amount of force
         return self.mass*self.percent_ejection*thrust_acc
 
+    def display(self, screen, screen_col, screen_row, win_width, win_height):
+
+        # Blit the player to the screen
+        screen.blit(self.surface,[
+                        self.rect.left + (-screen_col*win_width),
+                        self.rect.top + (-screen_row*win_height)])
+
     # Move the sprite based on user keypresses
     def update(self, all_sprites, key_down_flag, pressed_keys):
 

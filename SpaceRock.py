@@ -45,6 +45,13 @@ class SpaceRock(pygame.sprite.Sprite):
             self.surface = pygame.transform.scale(self.surface, (120,120))
             self.surface.set_colorkey((0,0,0), RLEACCEL)
 
+    def display(self, screen, screen_col, screen_row, win_width, win_height):
+
+        # Blit the space rock to the screen
+        screen.blit(self.surface,[
+                        self.rect.left + (-screen_col*win_width),
+                        self.rect.top + (-screen_row*win_height)])
+
     def update(self, all_sprites, map_rect):
 
         # Calculate force on object

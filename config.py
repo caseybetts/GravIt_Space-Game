@@ -26,9 +26,9 @@ grav_threshold = 20
 
 # Space Rock parameters
 helper_force =  5000
-small_rock =    500000
-med_rock =      50000000000000
-big_rock =      100000000000000
+small_rock =    1e14
+med_rock =      5e14
+big_rock =      1e15
 MASSES = (small_rock, med_rock, big_rock)
 rock_start_velocity = (0,2)
 
