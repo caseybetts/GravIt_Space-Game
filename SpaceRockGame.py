@@ -253,6 +253,7 @@ class Space_Rock_Program():
                 self.blob.mass += collision_rock[0].mass
                 self.blob.velocity = [momentum(self.blob.mass,self.blob.velocity[0], collision_rock[0].mass, collision_rock[0].velocity[0])/2,
                                 momentum(self.blob.mass,self.blob.velocity[1], collision_rock[0].mass, collision_rock[0].velocity[1])/2]
+                self.blob.collision_sound.play()
                 for point in self.point_group:
                     if point.id == collision_rock[0].id:
                         point.kill()

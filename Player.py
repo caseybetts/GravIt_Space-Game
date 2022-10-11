@@ -39,6 +39,10 @@ class Player(pygame.sprite.Sprite):
         self.thrust_group = pygame.sprite.Group()
         self.percent_ejection = .001
 
+        # Collision Sound
+        self.collision_sound = pygame.mixer.Sound(gulp_sound_location)
+        self.collision_sound.set_volume(.5)
+
     def thrust(self, direction):
 
         # Create a new thrust sprite and add it to the group

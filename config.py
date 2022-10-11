@@ -8,6 +8,7 @@ music_on = True
 background_music_location = "audio/background_music.wav"
 button_sound_location = "audio/button-gong-sabi.wav"
 thrust_sound_location = "audio/thrust.flac"
+gulp_sound_location = "audio/gulp.mp3"
 
 # Graphics
 button_image_location = 'Graphics/Blue_button2.png'
