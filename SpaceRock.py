@@ -52,7 +52,7 @@ class SpaceRock(pygame.sprite.Sprite):
                         self.rect.left + (-screen_col*win_width),
                         self.rect.top + (-screen_row*win_height)])
 
-    def update(self, all_sprites, map_rect):
+    def update(self, all_sprites, map_rect, screen, screen_col, screen_row, win_width, win_height):
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
@@ -83,3 +83,5 @@ class SpaceRock(pygame.sprite.Sprite):
             self.kill()
         if self.rect.top < map_rect.top or self.rect.bottom > map_rect.bottom:
             self.kill()
+
+        self.display(screen, screen_col, screen_row, win_width, win_height)

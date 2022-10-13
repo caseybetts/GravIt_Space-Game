@@ -66,7 +66,7 @@ class Player(pygame.sprite.Sprite):
                         self.rect.top + (-screen_row*win_height)])
 
     # Move the sprite based on user keypresses
-    def update(self, all_sprites, key_down_flag, pressed_keys):
+    def update(self, all_sprites, key_down_flag, pressed_keys, screen, screen_col, screen_row, win_width, win_height):
 
         x_thrust = 0
         y_thrust = 0
@@ -99,3 +99,5 @@ class Player(pygame.sprite.Sprite):
 
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
+
+        self.display(screen, screen_col, screen_row, win_width, win_height)

@@ -259,45 +259,37 @@ class Space_Rock_Program():
                         point.kill()
                 self.remaining_rocks = len(self.rocks.sprites())
 
-
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
 
-            # Update the position of the radare points
-            self.point_group.update(
-                            self.rocks,
-                            self.blob.rect,
-                            self.radar_rect,
-                            self.map_rect) # Update the radar point positions
-            self.blob.thrust_group.update() # Update thrust group
-
-
-            ## Display: background, player, space rocks, thrust objects, radar screen and text
-
             # Blit the background
             self.screen.blit(self.bg_image,(0,0))
+
+            # Update thrust group
+            self.blob.thrust_group.update(
+                                        self.screen,
+                                        self.screen_col,
+                                        self.screen_row,
+                                        self.win_width,
+                                        self.win_height)
 
             # Update the player position
             self.blob.update(
                             self.all_sprites,
                             self.key_down_flag,
                             pressed_keys,
-                            )
-
-            # BLit the player on the screen
-            self.blob.display(
                             self.screen,
                             self.screen_col,
                             self.screen_row,
                             self.win_width,
-                            self.win_height)
+                            self.win_height
+                            )
 
-            # Update and Blit space rocks
+            # Update the space rocks
             for entity in self.rocks:
                 entity.update(
                                 self.all_sprites,
-                                self.map_rect)
-                entity.display(
+                                self.map_rect,
                                 self.screen,
                                 self.screen_col,
                                 self.screen_row,
@@ -335,14 +327,17 @@ class Space_Rock_Program():
                                 self.win_height*radar_reduction)
                             )
 
-            # Draw the radar points on the screen
-            for entity in self.point_group:
-                entity.display(
-                                self.screen,
-                                self.screen_col,
-                                self.screen_row,
-                                self.win_width,
-                                self.win_height)
+            # Update the position of the radar points
+            self.point_group.update(
+                            self.rocks,
+                            self.blob.rect,
+                            self.radar_rect,
+                            self.map_rect,
+                            self.screen,
+                            self.screen_col,
+                            self.screen_row,
+                            self.win_width,
+                            self.win_height)
 
             # Display the current percent_ejection value
             percent_ejection_label_surf = self.font.render(f'Thrust Control', False, (64,64,64))

@@ -34,7 +34,7 @@ class ThrustSprite(pygame.sprite.Sprite):
                         self.rect.left + (-screen_col*win_width),
                         self.rect.top + (-screen_row*win_height)])
 
-    def update(self):
+    def update(self, screen, screen_col, screen_row, win_width, win_height):
 
         if self.direction == 'left':
             self.rect.move_ip(self.speed,0)
@@ -49,3 +49,5 @@ class ThrustSprite(pygame.sprite.Sprite):
         if self.count > 10:
             self.kill()
         self.count+=1
+
+        self.display(screen, screen_col, screen_row, win_width, win_height)

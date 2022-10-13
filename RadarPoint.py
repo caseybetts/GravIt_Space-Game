@@ -36,7 +36,7 @@ class RadarPoint(pygame.sprite.Sprite):
                         self.rect.left,
                         self.rect.top])
 
-    def update(self, rocks, player_rect, radar_rect, map_rect):
+    def update(self, rocks, player_rect, radar_rect, map_rect, screen, screen_col, screen_row, win_width, win_height):
         # If the point is the player
         if self.id == 0:
             player_coords = radar_coord_conversion(
@@ -48,6 +48,8 @@ class RadarPoint(pygame.sprite.Sprite):
                                 )
             self.rect[0] = player_coords[0]
             self.rect[1] = player_coords[1]
+
+            self.display(screen, screen_col, screen_row, win_width, win_height)
         else:
             # Find the space rock with the same id and change position to match
             alive = False
@@ -63,6 +65,8 @@ class RadarPoint(pygame.sprite.Sprite):
                                     )
                     self.rect[0] = rock_coords[0]
                     self.rect[1] = rock_coords[1]
+
+                    self.display(screen, screen_col, screen_row, win_width, win_height)
 
             # If the alive flag does not get put to True then a rock was not found, kill the point
             if not alive: self.kill()
