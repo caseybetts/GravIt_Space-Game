@@ -161,7 +161,7 @@ class Space_Rock_Program():
         self.set_level_parameters()
 
         # Create text object for displaying the level
-        level_text = self.level_font.render(f'Level {self.game_level}', False, (84,84,84))
+        level_text = self.level_font.render('Level {}'.format(self.game_level), False, (84,84,84))
 
         # Create sprite group of space rocks
         self.rocks = self.setup.make_random_rocks(
@@ -340,15 +340,15 @@ class Space_Rock_Program():
                             self.win_height)
 
             # Display the current percent_ejection value
-            percent_ejection_label_surf = self.font.render(f'Thrust Control', False, (64,64,64))
-            percent_ejection_surf = self.font.render(f'{self.blob.percent_ejection}', False, (64,64,64))
+            percent_ejection_label_surf = self.font.render('Thrust Control', False, (64,64,64))
+            percent_ejection_surf = self.font.render('{}'.format(self.blob.percent_ejection), False, (64,64,64))
             self.screen.blit(percent_ejection_label_surf, (15, (self.win_height/4)-150))
             self.screen.blit(percent_ejection_surf,(15,(self.win_height/4)-100))
 
             # Display the current mass of the player
             disp_mass = exponent_split(self.blob.mass)
             mass_text_surf = self.font.render(
-                                        f'Current Mass: {round(disp_mass[0],2)} e {disp_mass[1]} kg              Space Rocks Remaining: {self.remaining_rocks}',
+                                        'Current Mass: {mass} e {disp_mass} kg              Space Rocks Remaining: {remaining_rocks}'.format(mass=round(disp_mass[0],2),disp_mass=disp_mass[1],remaining_rocks=self.remaining_rocks),
                                         False,
                                         (64,64,64))
             self.screen.blit(mass_text_surf,(10,10))
