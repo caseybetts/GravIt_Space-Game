@@ -44,20 +44,20 @@ class Space_Rock_Program():
 
         # Button set up
         button_image = pygame.image.load(button_image_location)
-        self.real_button = Button(self.win_width/2, (self.win_height/2) - 100, .7, "Real Gravity", "Black", button_image)
-        self.far_button = Button(self.win_width/2, (self.win_height/2) + 100, .7, "Far Gravity", "Black", button_image)
-        self.exit_button = Button(self.win_width - 20, 20, .5, "X", (64,64,64))
+        self.real_button = Button(self.win_width/2, (self.win_height/2) - 100, .7, "GravIt!", "Black", 200, button_image)
+        self.far_button = Button(self.win_width/2, (self.win_height/2) + 100, .7, "Speed Round", "Black", 200, button_image)
+        self.exit_button = Button(self.win_width - 20, 20, .5, "X", (64,64,64), 100)
         up_button_image = pygame.image.load(up_button_image_location)
         down_button_image = pygame.image.load(down_button_image_location)
-        self.increase_mass_button = Button(30, (self.win_height/4)-40, .25, "", "Blue", up_button_image)
-        self.decrease_mass_button = Button(30, (self.win_height/4)+40, .25, "", "Blue", down_button_image)
+        self.increase_mass_button = Button(30, (self.win_height/4)-40, .25, "", "Blue", 100, up_button_image)
+        self.decrease_mass_button = Button(30, (self.win_height/4)+40, .25, "", "Blue", 100, down_button_image)
 
         # Create a Game_Setup object
         self.setup = Game_Setup()
 
         # Create the player sprite
         self.blob = Player(
-                    player_start_mass,
+                    PLAYER_START_MASS,
                     player_start_size_x,
                     player_start_size_y
                     )
@@ -78,11 +78,11 @@ class Space_Rock_Program():
         self.map_rect = self.map.get_rect(left = self.map_left_boundary, top = self.map_top_boundary)
 
         # Calculate radar coords
-        radar_left = self.win_width-20-(map_width*radar_reduction)
-        radar_top = self.win_height-20-(map_height*radar_reduction)
+        radar_left = self.win_width-20-(map_width*RADAR_REDUCTION)
+        radar_top = self.win_height-20-(map_height*RADAR_REDUCTION)
 
         # Create Radar screen surface
-        self.radar_screen = pygame.Surface(((map_width)*radar_reduction,(map_height)*radar_reduction))
+        self.radar_screen = pygame.Surface(((map_width)*RADAR_REDUCTION,(map_height)*RADAR_REDUCTION))
         self.radar_screen.fill((25,25,25))
         self.radar_screen.set_alpha(128)
         self.radar_rect = self.radar_screen.get_rect(left = radar_left, top = radar_top)
@@ -104,6 +104,7 @@ class Space_Rock_Program():
         self.game_level = 0
         self.win_mass = 0
         self.level_text_count = 0
+        self.space_rock_set = []
 
     def update_screen_position(self, player_rect):
         """Given the player's position, this determines the column and row of the screen on the map."""
@@ -145,12 +146,18 @@ class Space_Rock_Program():
         if self.game_level == 1:
             self.number_of_rocks = 90
             self.win_mass = 6e15
+            self.brown_space_rock_set = LEVEL_1_BROWN_SET
+            self.grey_space_rock_set = LEVEL_1_GREY_SET
         elif self.game_level == 2:
             self.number_of_rocks = 50
             self.win_mass = 8e15
+            self.brown_space_rock_set = LEVEL_2_BROWN_SET
+            self.grey_space_rock_set = LEVEL_2_GREY_SET
         elif self.game_level == 3:
             self.number_of_rocks = 20
             self.win_mass = 10e15
+            self.brown_space_rock_set = LEVEL_3_BROWN_SET
+            self.grey_space_rock_set = LEVEL_3_GREY_SET
 
         self.level_text_count = 100
 
@@ -164,25 +171,19 @@ class Space_Rock_Program():
         level_text = self.level_font.render('Level {}'.format(self.game_level), False, (84,84,84))
 
         # Create sprite group of space rocks
-        self.rocks = self.setup.make_random_rocks(
-                                            self.number_of_rocks,
-                                            [self.map_left_boundary,
-                                            self.map_right_boundary],
-                                            [self.map_top_boundary,
-                                            self.map_bottom_boundary])
-
-        # Create sprite group of radar points
-        self.point_group = self.setup.make_radar_points(self.number_of_rocks)
-        self.point_group.add(self.player_point)
+        self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown")
+        self.grey_rocks = self.setup.rock_generator(self.grey_space_rock_set, "Grey")
 
         # Create sprite group for all sprites
         self.all_sprites = pygame.sprite.Group()
-        for rock in self.rocks:
+        for rock in self.brown_rocks:
+            self.all_sprites.add(rock)
+        for rock in self.grey_rocks:
             self.all_sprites.add(rock)
         self.all_sprites.add(self.blob)
 
         # Create variable for the number of rocks remaining
-        self.remaining_rocks = len(self.rocks.sprites())
+        self.remaining_rocks = len(self.brown_rocks.sprites()) + len(self.grey_rocks.sprites())
 
         # Set the player position and velocity
         self.blob.rect.left = self.win_width/2
@@ -217,35 +218,51 @@ class Space_Rock_Program():
             pressed_keys = pygame.key.get_pressed()
 
             ## Check for collisions
-            # Collisions between space rocks. If so, combine space rocks.
-            for rock in self.rocks:
-                rock_collision = pygame.sprite.spritecollideany(rock, self.rocks)
+            # Collisions between brown space rocks. If so, combine space rocks.
+            for rock in self.brown_rocks:
+                rock_collision = pygame.sprite.spritecollideany(rock, self.brown_rocks)
+
                 if rock_collision.id != rock.id:
+
                     if abs(rock_collision.velocity[0] - rock.velocity[0]) < 1 and abs(rock_collision.velocity[1] - rock.velocity[1]) < 1:
+
                         if rock_collision.mass > rock.mass:
                             rock_collision.mass += rock.mass
                             rock_collision.change_size()
-                            for point in self.point_group:
-                                if point.id == rock_collision.id:
-                                    point.change_size(rock_collision.mass)
-                                if point.id == rock.id:
-                                    point.kill()
                             rock.kill()
 
                         else:
                             rock.mass += rock_collision.mass
-                            for point in self.point_group:
-                                if point.id == rock_collision.id:
-                                    point.kill()
                             rock_collision.kill()
-                        self.remaining_rocks = len(self.rocks.sprites())
+                        self.remaining_rocks = len(self.brown_rocks.sprites())
                     else:
                         rock_collision.velocity[0] *= collision_slow_percent
                         rock_collision.velocity[1] *= collision_slow_percent
                         rock.velocity[0] *= collision_slow_percent
                         rock.velocity[1] *= collision_slow_percent
-            # Collisions between space rocks and the player
-            collision_rock = pygame.sprite.spritecollide(self.blob,self.rocks, True)
+
+            # Collisions between grey space rocks. If so, combine space rocks.
+            for rock in self.grey_rocks:
+                rock_collision = pygame.sprite.spritecollideany(rock, self.grey_rocks)
+                if rock_collision.id != rock.id:
+                    if abs(rock_collision.velocity[0] - rock.velocity[0]) < 1 and abs(rock_collision.velocity[1] - rock.velocity[1]) < 1:
+                        if rock_collision.mass > rock.mass:
+                            rock_collision.mass += rock.mass
+                            rock_collision.change_size()
+                            rock.kill()
+
+                        else:
+                            rock.mass += rock_collision.mass
+                            rock_collision.kill()
+                        self.remaining_rocks = len(self.grey_rocks.sprites())+len(self.brown_rocks.sprites())
+                    else:
+                        rock_collision.velocity[0] *= collision_slow_percent
+                        rock_collision.velocity[1] *= collision_slow_percent
+                        rock.velocity[0] *= collision_slow_percent
+                        rock.velocity[1] *= collision_slow_percent
+
+            # Collisions between brown space rocks and the player
+            collision_rock = pygame.sprite.spritecollide(self.blob,self.brown_rocks, True)
 
             if collision_rock:
                 # If so, then kill the space rock and add the rock's mass to the player mass
@@ -254,10 +271,13 @@ class Space_Rock_Program():
                 self.blob.velocity = [momentum(self.blob.mass,self.blob.velocity[0], collision_rock[0].mass, collision_rock[0].velocity[0])/2,
                                 momentum(self.blob.mass,self.blob.velocity[1], collision_rock[0].mass, collision_rock[0].velocity[1])/2]
                 self.blob.collision_sound.play()
-                for point in self.point_group:
-                    if point.id == collision_rock[0].id:
-                        point.kill()
-                self.remaining_rocks = len(self.rocks.sprites())
+                self.remaining_rocks -= 1
+
+            # Collisions between grey space rocks and the player
+            if pygame.sprite.spritecollide(self.blob,self.grey_rocks, True):
+                # Reverse the player's velocity
+                self.blob.velocity[0] *= -1
+                self.blob.velocity[1] *= -1
 
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
@@ -265,6 +285,25 @@ class Space_Rock_Program():
             # Blit the background
             self.screen.blit(self.bg_image,(0,0))
 
+            # Calculate the display position of the shadow of the active screen on the radar
+            screen_position = radar_coord_conversion(
+                                        self.screen_col*self.win_width,
+                                        self.screen_row*self.win_height,
+                                        RADAR_REDUCTION,
+                                        self.radar_rect,
+                                        self.map_rect
+                                        )
+
+            # Draw the shadow of the active screen on the radar screen
+            pygame.draw.rect(
+                            self.screen,
+                            (40,40,40),
+                            (   screen_position[0],
+                                screen_position[1],
+                                self.win_width*RADAR_REDUCTION,
+                                self.win_height*RADAR_REDUCTION)
+                            )
+                            
             # Update thrust group
             self.blob.thrust_group.update(
                                         self.screen,
@@ -282,11 +321,13 @@ class Space_Rock_Program():
                             self.screen_col,
                             self.screen_row,
                             self.win_width,
-                            self.win_height
+                            self.win_height,
+                            self.map_rect,
+                            self.radar_rect
                             )
 
-            # Update the space rocks
-            for entity in self.rocks:
+            # Update the space brown_rocks
+            for entity in self.brown_rocks:
                 entity.update(
                                 self.all_sprites,
                                 self.map_rect,
@@ -294,7 +335,20 @@ class Space_Rock_Program():
                                 self.screen_col,
                                 self.screen_row,
                                 self.win_width,
-                                self.win_height)
+                                self.win_height,
+                                self.radar_rect)
+
+            # Update the space grey rocks
+            for entity in self.grey_rocks:
+                entity.update(
+                                self.all_sprites,
+                                self.map_rect,
+                                self.screen,
+                                self.screen_col,
+                                self.screen_row,
+                                self.win_width,
+                                self.win_height,
+                                self.radar_rect)
 
             # Blit the thrust group with adjusted coordinates
             for sprite in self.blob.thrust_group:
@@ -308,36 +362,7 @@ class Space_Rock_Program():
             # Blit the radar screen on the window
             self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
 
-            # Calculate the display position of the shadow of the active screen on the radar
-            screen_position = radar_coord_conversion(
-                                        self.screen_col*self.win_width,
-                                        self.screen_row*self.win_height,
-                                        radar_reduction,
-                                        self.radar_rect,
-                                        self.map_rect
-                                        )
 
-            # Draw the shadow of the active screen on the radar screen
-            pygame.draw.rect(
-                            self.screen,
-                            (40,40,40),
-                            (   screen_position[0],
-                                screen_position[1],
-                                self.win_width*radar_reduction,
-                                self.win_height*radar_reduction)
-                            )
-
-            # Update the position of the radar points
-            self.point_group.update(
-                            self.rocks,
-                            self.blob.rect,
-                            self.radar_rect,
-                            self.map_rect,
-                            self.screen,
-                            self.screen_col,
-                            self.screen_row,
-                            self.win_width,
-                            self.win_height)
 
             # Display the current percent_ejection value
             percent_ejection_label_surf = self.font.render('Thrust Control', False, (64,64,64))
@@ -376,7 +401,7 @@ class Space_Rock_Program():
                 self.game_level = -1
 
             ## Changing game state
-            if not self.rocks.sprites():  # If there are no more space rocks
+            if not self.brown_rocks.sprites():  # If there are no more space rocks
                 self.game_level = 0
 
             # Check if your mass is great enough to win the level

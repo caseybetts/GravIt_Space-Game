@@ -69,7 +69,6 @@ def motion_tester(type):
     else:
         print("Invalid motion type. Use 1, 2 or 3.")
 
-
 def pickle_ball(target,window_Height):
 
     # Update velocity

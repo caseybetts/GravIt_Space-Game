@@ -1,5 +1,7 @@
 # This contains a class for thrust sprites, the mass ejected from the blob
 import pygame
+
+from config import *
 from math import log
 
 pygame.init()
@@ -14,13 +16,13 @@ class ThrustSprite(pygame.sprite.Sprite):
         self.count = 0
 
         size = 0
-        if mass > 4e10:
+        if mass > PLAYER_START_MASS:
             size = 1
-        elif mass > 4e16:
+        elif mass > PLAYER_START_MASS*1.4:
             size = 5
-        if mass > 4e17:
+        if mass > PLAYER_START_MASS*1.8:
             size = 10
-        if mass > 4e18:
+        if mass > PLAYER_START_MASS*2.6:
             size = 20
 
         self.surface = pygame.Surface((size,size))

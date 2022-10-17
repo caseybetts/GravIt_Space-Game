@@ -1,7 +1,10 @@
 # This file contains the Player class
 
 import pygame
-from Calculations import find_force
+from Calculations import (
+                    find_force,
+                    radar_coord_conversion
+                    )
 from config import *
 # Import pygame.locals for easier access to key coordinates
 from pygame.locals import (
@@ -43,6 +46,11 @@ class Player(pygame.sprite.Sprite):
         self.collision_sound = pygame.mixer.Sound(gulp_sound_location)
         self.collision_sound.set_volume(.5)
 
+        # Create radar point parameters
+        self.radar_point_position = [0,0]
+        self.radar_point_color = 'Green'
+        self.radar_point_size = 2
+
     def thrust(self, direction):
 
         # Create a new thrust sprite and add it to the group
@@ -65,8 +73,17 @@ class Player(pygame.sprite.Sprite):
                         self.rect.left + (-screen_col*win_width),
                         self.rect.top + (-screen_row*win_height)])
 
+        # Blit the radar point to the screen
+        pygame.draw.rect(
+                        screen,
+                        self.radar_point_color,
+                        (self.radar_point_position[0],
+                          self.radar_point_position[1],
+                          self.radar_point_size,
+                          self.radar_point_size))
+
     # Move the sprite based on user keypresses
-    def update(self, all_sprites, key_down_flag, pressed_keys, screen, screen_col, screen_row, win_width, win_height):
+    def update(self, all_sprites, key_down_flag, pressed_keys, screen, screen_col, screen_row, win_width, win_height, map_rect, radar_rect):
 
         x_thrust = 0
         y_thrust = 0
@@ -99,5 +116,14 @@ class Player(pygame.sprite.Sprite):
 
         # Find the displacement in position
         self.rect.move_ip(self.velocity[0],self.velocity[1])
+
+        # Update the radar point
+        self.radar_point_position = radar_coord_conversion(
+                                                            self.rect.left,
+                                                            self.rect.top,
+                                                            RADAR_REDUCTION,
+                                                            radar_rect,
+                                                            map_rect)
+
 
         self.display(screen, screen_col, screen_row, win_width, win_height)

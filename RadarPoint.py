@@ -22,34 +22,37 @@ class RadarPoint(pygame.sprite.Sprite):
 
     def change_size(self, mass):
         """Chage the size of the radar point"""
-        if mass >= 2*big_rock:
+        if mass >= BIG_MASS:
             self.surface = pygame.Surface((2,2))
             self.surface.fill("Red")
-        if mass >= 4*big_rock:
+        if mass >= 2*BIG_MASS:
             self.surface = pygame.Surface((4,4))
             self.surface.fill("Red")
 
-    def display(self, screen, screen_col, screen_row, win_width, win_height):
+    def display(self, screen):
 
         # Blit the radar point to the screen
         screen.blit(self.surface,[
                         self.rect.left,
                         self.rect.top])
 
-    def update(self, rocks, player_rect, radar_rect, map_rect, screen, screen_col, screen_row, win_width, win_height):
+    def update(self, rocks, player_rect, radar_rect, map_rect, screen):
+
+
         # If the point is the player
         if self.id == 0:
             player_coords = radar_coord_conversion(
                                 player_rect.left,
                                 player_rect.top,
-                                radar_reduction,
+                                RADAR_REDUCTION,
                                 radar_rect,
                                 map_rect
                                 )
             self.rect[0] = player_coords[0]
             self.rect[1] = player_coords[1]
 
-            self.display(screen, screen_col, screen_row, win_width, win_height)
+            # Blit the radar point to the screen
+            self.display(screen)
         else:
             # Find the space rock with the same id and change position to match
             alive = False
@@ -59,14 +62,15 @@ class RadarPoint(pygame.sprite.Sprite):
                     rock_coords = radar_coord_conversion(
                                     rock.rect.left,
                                     rock.rect.top,
-                                    radar_reduction,
+                                    RADAR_REDUCTION,
                                     radar_rect,
                                     map_rect
                                     )
                     self.rect[0] = rock_coords[0]
                     self.rect[1] = rock_coords[1]
 
-                    self.display(screen, screen_col, screen_row, win_width, win_height)
+                    # Blit the radar point to the screen
+                    self.display(screen)
 
             # If the alive flag does not get put to True then a rock was not found, kill the point
             if not alive: self.kill()
