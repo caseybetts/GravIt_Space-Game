@@ -99,6 +99,14 @@ def momentum(m1,v1,m2,v2):
     final_velocity = (m1*v1 + m2*v2)/(m1+m2)
     return final_velocity
 
+def elastic_momentum(m1,v1,m2,v2):
+    # returns the velocities of the two objects after collision
+    mass_ratio = m1/m2
+    v1_final = ((1-mass_ratio)/(mass_ratio-1))*v1
+    v2_final = v1 + v2 - v1_final
+
+    return [v1_final, v2_final]
+
 def exponent_split(num):
     """Convert exponential notation to value and exponent"""
     count = 0

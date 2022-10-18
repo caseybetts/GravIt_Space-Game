@@ -25,6 +25,8 @@ player_start_size_y = 20
 thrust_acc = 100000
 collision_slow_percent = .99
 grav_threshold = 20
+BOUNCE_SLOW_PERCENT = .5
+
 
 # Space Rock parameters
 helper_force =  5000
@@ -46,11 +48,11 @@ RADAR_REDUCTION = .04
 LEVEL_1_BROWN_SET = [
                 ["HUGE_MASS",1],
                 ["BIG_MASS",10],
-                ["MED_MASS",50],
-                ["SMALL_MASS",20]]
+                ["MED_MASS",10],
+                ["SMALL_MASS",10]]
 LEVEL_1_GREY_SET = [
                 ["BIG_MASS",3],
-                ["MED_MASS",5],
+                ["MED_MASS",50],
                 ["SMALL_MASS",9]]
 
 LEVEL_2_BROWN_SET = [

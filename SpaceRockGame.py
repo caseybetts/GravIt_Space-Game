@@ -10,7 +10,8 @@ from Calculations import (
     find_force,
     radar_coord_conversion,
     momentum,
-    exponent_split
+    exponent_split,
+    elastic_momentum
     )
 from config import *
 from SpaceRock import *
@@ -190,6 +191,9 @@ class Space_Rock_Program():
         self.blob.rect.top = self.win_height/2
         self.blob.velocity = [0,0]
 
+        # Create flag for grey rock collision
+        self.grey_collision = False
+
         while self.game_level == level:
 
             # Loop through all the current pygame events in the queue
@@ -214,7 +218,7 @@ class Space_Rock_Program():
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
 
-            # Get the set of keys pressed
+            # Get the set of keyboard keys pressed
             pressed_keys = pygame.key.get_pressed()
 
             ## Check for collisions
@@ -230,7 +234,6 @@ class Space_Rock_Program():
                             rock_collision.mass += rock.mass
                             rock_collision.change_size()
                             rock.kill()
-
                         else:
                             rock.mass += rock_collision.mass
                             rock_collision.kill()
@@ -274,16 +277,30 @@ class Space_Rock_Program():
                 self.remaining_rocks -= 1
 
             # Collisions between grey space rocks and the player
-            if pygame.sprite.spritecollide(self.blob,self.grey_rocks, True):
-                # Reverse the player's velocity
-                self.blob.velocity[0] *= -1
-                self.blob.velocity[1] *= -1
+            grey_collision_rock = pygame.sprite.spritecollide(self.blob,self.grey_rocks, False)
+            if grey_collision_rock:
+
+                if not self.grey_collision:
+                    # Elastic collision
+                    final_x_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[0], grey_collision_rock[0].mass, grey_collision_rock[0].velocity[0])
+                    final_y_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[1], grey_collision_rock[0].mass, grey_collision_rock[0].velocity[1])
+                    self.blob.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
+                    self.blob.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
+                    grey_collision_rock[0].velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
+                    grey_collision_rock[0].velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
+
+                self.grey_collision = True
+            else:
+                self.grey_collision = False
 
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
 
             # Blit the background
             self.screen.blit(self.bg_image,(0,0))
+
+            # Blit the radar screen on the window
+            self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
 
             # Calculate the display position of the shadow of the active screen on the radar
             screen_position = radar_coord_conversion(
@@ -303,7 +320,7 @@ class Space_Rock_Program():
                                 self.win_width*RADAR_REDUCTION,
                                 self.win_height*RADAR_REDUCTION)
                             )
-                            
+
             # Update thrust group
             self.blob.thrust_group.update(
                                         self.screen,
@@ -326,7 +343,7 @@ class Space_Rock_Program():
                             self.radar_rect
                             )
 
-            # Update the space brown_rocks
+            # Update the brown_rocks
             for entity in self.brown_rocks:
                 entity.update(
                                 self.all_sprites,
@@ -358,11 +375,6 @@ class Space_Rock_Program():
                                 self.screen_row,
                                 self.win_width,
                                 self.win_height)
-
-            # Blit the radar screen on the window
-            self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
-
-
 
             # Display the current percent_ejection value
             percent_ejection_label_surf = self.font.render('Thrust Control', False, (64,64,64))
