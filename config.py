@@ -35,7 +35,7 @@ MED_MASS =      5e14
 BIG_MASS =      1e15
 HUGE_MASS =     1e16
 MASSES = (SMALL_MASS, MED_MASS, BIG_MASS)
-ROCK_START_VELOCITY = (0,2)
+ROCK_START_VELOCITY = (-1,1)
 
 # Set how many screens the map consists of
 map_size_width = 7
@@ -46,14 +46,14 @@ RADAR_REDUCTION = .04
 
 # Level parameters
 LEVEL_1_BROWN_SET = [
-                ["HUGE_MASS",1],
+                ["HUGE_MASS",0],
+                ["BIG_MASS",30],
+                ["MED_MASS",0],
+                ["SMALL_MASS",10]]
+LEVEL_1_GREY_SET = [
                 ["BIG_MASS",10],
                 ["MED_MASS",10],
                 ["SMALL_MASS",10]]
-LEVEL_1_GREY_SET = [
-                ["BIG_MASS",3],
-                ["MED_MASS",50],
-                ["SMALL_MASS",9]]
 
 LEVEL_2_BROWN_SET = [
                 ["BIG_MASS",10],

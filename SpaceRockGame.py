@@ -106,6 +106,7 @@ class Space_Rock_Program():
         self.win_mass = 0
         self.level_text_count = 0
         self.space_rock_set = []
+        self.grey_collision_flag = 1
 
     def update_screen_position(self, player_rect):
         """Given the player's position, this determines the column and row of the screen on the map."""
@@ -175,12 +176,17 @@ class Space_Rock_Program():
         self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown")
         self.grey_rocks = self.setup.rock_generator(self.grey_space_rock_set, "Grey")
 
-        # Create sprite group for all sprites
+        # Create sprite group for all rocks and all sprites
+        self.all_rocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
+        # Add the brown and grey rocks to both sprite groups
         for rock in self.brown_rocks:
             self.all_sprites.add(rock)
+            self.all_rocks.add(rock)
         for rock in self.grey_rocks:
             self.all_sprites.add(rock)
+            self.all_rocks.add(rock)
+        # Add the player to the all sprites group
         self.all_sprites.add(self.blob)
 
         # Create variable for the number of rocks remaining
@@ -190,9 +196,6 @@ class Space_Rock_Program():
         self.blob.rect.left = self.win_width/2
         self.blob.rect.top = self.win_height/2
         self.blob.velocity = [0,0]
-
-        # Create flag for grey rock collision
-        self.grey_collision = False
 
         while self.game_level == level:
 
@@ -264,34 +267,16 @@ class Space_Rock_Program():
                         rock.velocity[0] *= collision_slow_percent
                         rock.velocity[1] *= collision_slow_percent
 
-            # Collisions between brown space rocks and the player
-            collision_rock = pygame.sprite.spritecollide(self.blob,self.brown_rocks, True)
-
-            if collision_rock:
-                # If so, then kill the space rock and add the rock's mass to the player mass
-                print( collision_rock[0].mass )
-                self.blob.mass += collision_rock[0].mass
-                self.blob.velocity = [momentum(self.blob.mass,self.blob.velocity[0], collision_rock[0].mass, collision_rock[0].velocity[0])/2,
-                                momentum(self.blob.mass,self.blob.velocity[1], collision_rock[0].mass, collision_rock[0].velocity[1])/2]
-                self.blob.collision_sound.play()
-                self.remaining_rocks -= 1
-
-            # Collisions between grey space rocks and the player
-            grey_collision_rock = pygame.sprite.spritecollide(self.blob,self.grey_rocks, False)
-            if grey_collision_rock:
-
-                if not self.grey_collision:
-                    # Elastic collision
-                    final_x_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[0], grey_collision_rock[0].mass, grey_collision_rock[0].velocity[0])
-                    final_y_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[1], grey_collision_rock[0].mass, grey_collision_rock[0].velocity[1])
-                    self.blob.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
-                    self.blob.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                    grey_collision_rock[0].velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
-                    grey_collision_rock[0].velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
-
-                self.grey_collision = True
+            # Collisions between space rocks and the player
+            rock_player_collisions = pygame.sprite.spritecollide(self.blob,self.all_rocks, False)
+            if rock_player_collisions:
+                for rock in pygame.sprite.spritecollide(self.blob,self.all_rocks, False):
+                    # If the last rock in the list is grey, then set the flag to False
+                    self.grey_collision_flag = self.blob.collision(rock, self.grey_collision_flag)
+                    self.remaining_rocks -= self.grey_collision_flag
             else:
-                self.grey_collision = False
+                self.grey_collision_flag = 1
+
 
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
@@ -320,14 +305,6 @@ class Space_Rock_Program():
                                 self.win_width*RADAR_REDUCTION,
                                 self.win_height*RADAR_REDUCTION)
                             )
-
-            # Update thrust group
-            self.blob.thrust_group.update(
-                                        self.screen,
-                                        self.screen_col,
-                                        self.screen_row,
-                                        self.win_width,
-                                        self.win_height)
 
             # Update the player position
             self.blob.update(
@@ -367,18 +344,9 @@ class Space_Rock_Program():
                                 self.win_height,
                                 self.radar_rect)
 
-            # Blit the thrust group with adjusted coordinates
-            for sprite in self.blob.thrust_group:
-                sprite.display(
-                                self.screen,
-                                self.screen_col,
-                                self.screen_row,
-                                self.win_width,
-                                self.win_height)
-
             # Display the current percent_ejection value
             percent_ejection_label_surf = self.font.render('Thrust Control', False, (64,64,64))
-            percent_ejection_surf = self.font.render('{}'.format(self.blob.percent_ejection), False, (64,64,64))
+            percent_ejection_surf = self.font.render('{}'.format(round(self.blob.percent_ejection,4)), False, (64,64,64))
             self.screen.blit(percent_ejection_label_surf, (15, (self.win_height/4)-150))
             self.screen.blit(percent_ejection_surf,(15,(self.win_height/4)-100))
 

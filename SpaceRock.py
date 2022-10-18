@@ -32,15 +32,15 @@ class SpaceRock(pygame.sprite.Sprite):
                 self.mass = SMALL_MASS
             elif mass == 'MED_MASS':
                 image = "Graphics/meteorBrown_med3.png"
-                size = (40,40)
+                size = (20,20)
                 self.mass = MED_MASS
             elif mass == 'BIG_MASS':
                 image = "Graphics/meteorBrown_big2.png"
-                size = (20,20)
+                size = (40,40)
                 self.mass = BIG_MASS
             elif mass == 'HUGE_MASS':
                 image = "Graphics/meteorBrown_big2.png"
-                size = (22,22)
+                size = (55,55)
                 self.mass = HUGE_MASS
         else:
             # Choose meteor size based on mass

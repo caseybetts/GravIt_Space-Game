@@ -1,29 +1,14 @@
-# This file contains the Player class
+# This file contains the Enemy class
 
 import pygame
-from Calculations import (
-                    elastic_momentum,
-                    momentum,
-                    find_force,
-                    radar_coord_conversion
-                    )
+
+from Calculations import find_force
 from config import *
-# Import pygame.locals for easier access to key coordinates
-from pygame.locals import (
-    RLEACCEL,
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
-    K_c,
-    KEYDOWN,
-    QUIT,
-    )
+
 from ThrustSprite import ThrustSprite
 
-class Player(pygame.sprite.Sprite):
-    """This is the player sprite"""
+class Enemy(pygame.sprite.Sprite):
+    """This is the enemy sprite"""
     def __init__(self, mass, x_size, y_size):
         super(Player,self).__init__()
 
@@ -31,30 +16,28 @@ class Player(pygame.sprite.Sprite):
         self.mass = mass
         self.velocity = [0,0]
         self.size = [x_size, y_size]
-        self.id = 0
+        self.id = 1000
+
         # Create pygame Surface
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
         self.surface = pygame.transform.scale(self.surface, self.size)
         self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = (0,0) )
+        self.rect = self.surface.get_rect( center = (1000,1000) )
 
         # Thrust sound and group
         self.thrust_sound = pygame.mixer.Sound(thrust_sound_location)
-        self.thrust_sound.set_volume(.75)
+        self.thrust_sound.set_volume(.25)
         self.thrust_group = pygame.sprite.Group()
         self.percent_ejection = .002
 
         # Collision Sound
         self.collision_sound = pygame.mixer.Sound(gulp_sound_location)
-        self.collision_sound.set_volume(.5)
+        self.collision_sound.set_volume(.15)
 
         # Create radar point parameters
         self.radar_point_position = [0,0]
-        self.radar_point_color = 'Green'
+        self.radar_point_color = 'Yellow'
         self.radar_point_size = 2
-
-        # Create gray collision flag
-        self.grey_collision_flag = False
 
     def thrust(self, direction):
 
@@ -73,7 +56,7 @@ class Player(pygame.sprite.Sprite):
 
     def display(self, screen, screen_col, screen_row, win_width, win_height):
 
-        # Blit the player to the screen
+        # Blit the enemy to the screen
         screen.blit(self.surface,[
                         self.rect.left + (-screen_col*win_width),
                         self.rect.top + (-screen_row*win_height)])
@@ -87,62 +70,23 @@ class Player(pygame.sprite.Sprite):
                           self.radar_point_size,
                           self.radar_point_size))
 
-        # Blit the thrust group with adjusted coordinates
+        # Blit the thrust group to the screen
         for sprite in self.thrust_group:
             sprite.display(
                             screen,
                             screen_col,
+
+
+
                             screen_row,
                             win_width,
                             win_height)
 
-    def collision(self, rock, grey_collision_flag):
-
-        # If it's a brown rock, then kill the space rock and add the rock's mass to the player mass
-        if rock.id < 200:
-            print( rock.mass )
-            self.mass += rock.mass
-            self.velocity = [momentum(self.mass,self.velocity[0], rock.mass, rock.velocity[0])/2,
-                            momentum(self.mass,self.velocity[1], rock.mass, rock.velocity[1])/2]
-            self.collision_sound.play()
-            rock.kill()
-
-            return 1
-        # If it's a grey rock, update the player and rock velocities
-        else:
-
-            if grey_collision_flag:
-                # Elastic collision
-                final_x_velocities = elastic_momentum(self.mass, self.velocity[0], rock.mass, rock.velocity[0])
-                final_y_velocities = elastic_momentum(self.mass, self.velocity[1], rock.mass, rock.velocity[1])
-                self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
-                self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                rock.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
-                rock.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
-
-            return 0
-
-
+    # Move the sprite based on AI logic
     def update(self, all_sprites, key_down_flag, pressed_keys, screen, screen_col, screen_row, win_width, win_height, map_rect, radar_rect):
-        """ Move the sprite based on user keypresses """
 
         x_thrust = 0
         y_thrust = 0
-
-        # Check if any key is pressed
-        if key_down_flag:
-            # Check which key is pressed and update thrust and mass
-            if pressed_keys[K_UP]:
-                y_thrust = -self.thrust('up')
-
-            if pressed_keys[K_DOWN]:
-                y_thrust = self.thrust('down')
-
-            if pressed_keys[K_LEFT]:
-                x_thrust = -self.thrust('left')
-
-            if pressed_keys[K_RIGHT]:
-                x_thrust = self.thrust('right')
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
