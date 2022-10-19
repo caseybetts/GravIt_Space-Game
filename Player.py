@@ -122,6 +122,10 @@ class Player(pygame.sprite.Sprite):
         # Or if the collision is with an enemy, update the player and enemy velocities
         elif type == "Enemy":
 
+            # Enemy will steal your mass
+            self.mass -= ENEMY_STEALING_AMMOUNT
+            sprite.mass += ENEMY_STEALING_AMMOUNT
+
             if collision_flag:
                 # Elastic collision
                 final_x_velocities = elastic_momentum(self.mass, self.velocity[0], sprite.mass, sprite.velocity[0])

@@ -278,7 +278,7 @@ class Space_Rock_Program():
             if len(player_collisions) > 1:
                 for sprite in player_collisions:
                     # Check if the sprite is an enemy
-                    if sprite.id > 1000:
+                    if sprite.id >= 1000:
                         self.blob.collision(sprite, "Enemy", self.enemy_collision_flag)
                         self.enemy_collision_flag = 0
                     # Or if the sprite is a grey rock

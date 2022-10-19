@@ -25,6 +25,7 @@ player_start_size_y = 20
 ENEMY_MASS = 1e15
 ENEMY_PERCENT_EJECTION = .007
 ENEMY_TOP_SPEED = 10
+ENEMY_STEALING_AMMOUNT = 5e12
 
 # Motion parameters
 thrust_acc = 100000

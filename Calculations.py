@@ -101,6 +101,13 @@ def momentum(m1,v1,m2,v2):
 
 def elastic_momentum(m1,v1,m2,v2):
     # returns the velocities of the two objects after collision
+    if v1 == 0 or v2 == 0:
+        v1 += .1
+        v2 += .1
+
+    if m1 == m2:
+        m1 += 10
+
     mass_ratio = m1/m2
     v1_final = ((1-mass_ratio)/(mass_ratio-1))*v1
     v2_final = v1 + v2 - v1_final
