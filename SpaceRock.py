@@ -50,15 +50,15 @@ class SpaceRock(pygame.sprite.Sprite):
                 self.mass = SMALL_MASS
             elif mass == 'MED_MASS':
                 image = "Graphics/meteorGrey_med2.png"
-                size = (40,40)
+                size = (20,20)
                 self.mass = MED_MASS
             elif mass == 'BIG_MASS':
                 image = "Graphics/meteorGrey_big1.png"
-                size = (20,20)
+                size = (40,40)
                 self.mass = BIG_MASS
             elif mass == 'HUGE_MASS':
                 image = "Graphics/meteorGrey_big1.png"
-                size = (22,22)
+                size = (45,45)
                 self.mass = HUGE_MASS
 
         # Create pygame Surface

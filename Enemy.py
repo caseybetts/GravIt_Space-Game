@@ -121,7 +121,7 @@ class Enemy(pygame.sprite.Sprite):
 
         horizontal = 0
         vertical = 0
-        # Give a thrust in the direction of the most rocks
+        # Determine which direction (left/right and up/down) there are the most rocks
         for rock in all_sprites:
             # rock is to the right of the enemy
             if rock.rect.centerx - self.rect.centerx > 0:
@@ -143,30 +143,46 @@ class Enemy(pygame.sprite.Sprite):
 
         x_thrust = 0
         y_thrust = 0
+        pygame_events = pygame.event.get()
 
+        # Horizontal speed check; slow the enemy if it's going too fast
+        if self.velocity[0] > ENEMY_TOP_SPEED:
+            x_thrust = self.thrust('left')
+        elif self.velocity[0] < -ENEMY_TOP_SPEED:
+            x_thrust = self.thrust('right')
         # Check if any thrust is needed
-        for event in pygame.event.get():
-            if event.type == self.thrust_count:
-                sense = self.sense(all_sprites)
-                print(sense)
-                print("v=", self.velocity)
-                # Check the horizontal for rock majority to the right
-                if sense[0]:
-                    if self.velocity[0] <= 1.5:
-                        x_thrust = self.thrust('right')
-                # Otherwise rock majority is to the left
-                else:
-                    if self.velocity[0] >= -1.5:
-                        x_thrust = -self.thrust('left')
+        else:
+            for event in pygame_events:
+                # Only give thrust if an event is created for it
+                if event.type == self.thrust_count:
+                    sense = self.sense(all_sprites)
+                    # Check the horizontal for rock majority to the right
+                    if sense[0]:
+                        if self.velocity[0] <= 1.5:
+                            x_thrust = self.thrust('right')
+                    # Otherwise rock majority is to the left
+                    else:
+                        if self.velocity[0] >= -1.5:
+                            x_thrust = -self.thrust('left')
 
-                if sense[1]:
-                    # Check the vertical for rock majority below
-                    if self.velocity[1] <= 1.5:
-                        y_thrust = self.thrust('down')
-                # Otherwise rock majority is above
-                else:
-                    if self.velocity[1] >= -1.5:
-                        y_thrust = -self.thrust('up')
+            # Vertical speed check; slow the enemy if it's going too fast
+            if self.velocity[1] > ENEMY_TOP_SPEED:
+                y_thrust = self.thrust('up')
+            elif self.velocity[1] < -ENEMY_TOP_SPEED:
+                y_thrust = self.thrust('down')
+            # Check if any thrust is needed
+            else:
+                for event in pygame_events:
+                    sense = self.sense(all_sprites)
+                    # Only give thrust if an event is created for it
+                    if sense[1]:
+                        # Check the vertical for rock majority below
+                        if self.velocity[1] <= 1.5:
+                            y_thrust = self.thrust('down')
+                    # Otherwise rock majority is above
+                    else:
+                        if self.velocity[1] >= -1.5:
+                            y_thrust = -self.thrust('up')
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)

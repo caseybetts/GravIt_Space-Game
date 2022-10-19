@@ -24,6 +24,7 @@ player_start_size_y = 20
 # Enemy parameters
 ENEMY_MASS = 1e15
 ENEMY_PERCENT_EJECTION = .007
+ENEMY_TOP_SPEED = 10
 
 # Motion parameters
 thrust_acc = 100000
@@ -40,10 +41,10 @@ BIG_MASS =      1e15
 HUGE_MASS =     1e16
 MASSES = (SMALL_MASS, MED_MASS, BIG_MASS)
 ROCK_START_VELOCITY = (-1,1)
-ROCK_LOWER_GAUSS_X = -2000
-ROCK_UPPER_GAUSS_X = -1000
-ROCK_LOWER_GAUSS_Y = -2000
-ROCK_UPPER_GAUSS_Y = -1000
+ROCK_LOWER_GAUSS_X = 0
+ROCK_UPPER_GAUSS_X = 1000
+ROCK_LOWER_GAUSS_Y = 0
+ROCK_UPPER_GAUSS_Y = 1000
 
 # Set how many screens the map consists of
 map_size_width = 7
@@ -56,10 +57,10 @@ RADAR_REDUCTION = .04
 LEVEL_1_BROWN_SET = [
                 ["HUGE_MASS",0],
                 ["BIG_MASS",30],
-                ["MED_MASS",30],
-                ["SMALL_MASS",10]]
+                ["MED_MASS",0],
+                ["SMALL_MASS",0]]
 LEVEL_1_GREY_SET = [
-                ["BIG_MASS",0],
+                ["BIG_MASS",30],
                 ["MED_MASS",0],
                 ["SMALL_MASS",0]]
 

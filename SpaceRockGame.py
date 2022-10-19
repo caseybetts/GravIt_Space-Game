@@ -193,6 +193,7 @@ class Space_Rock_Program():
             self.all_rocks.add(rock)
         # Add the player to the all sprites group
         self.all_sprites.add(self.blob)
+        self.all_sprites.add(self.enemy)
 
         # Create variable for the number of rocks remaining
         self.remaining_rocks = len(self.brown_rocks.sprites()) + len(self.grey_rocks.sprites())
@@ -272,15 +273,30 @@ class Space_Rock_Program():
                         rock.velocity[0] *= collision_slow_percent
                         rock.velocity[1] *= collision_slow_percent
 
-            # Collisions between space rocks and the player
-            rock_player_collisions = pygame.sprite.spritecollide(self.blob,self.all_rocks, False)
-            if rock_player_collisions:
-                for rock in pygame.sprite.spritecollide(self.blob,self.all_rocks, False):
-                    # If the last rock in the list is grey, then set the flag to False
-                    self.grey_collision_flag = self.blob.collision(rock, self.grey_collision_flag)
-                    self.remaining_rocks -= self.grey_collision_flag
+            # Collisions with the player
+            player_collisions = pygame.sprite.spritecollide(self.blob,self.all_sprites, False)
+            if len(player_collisions) > 1:
+                for sprite in player_collisions:
+                    # Check if the sprite is an enemy
+                    if sprite.id > 1000:
+                        self.blob.collision(sprite, "Enemy", self.enemy_collision_flag)
+                        self.enemy_collision_flag = 0
+                    # Or if the sprite is a grey rock
+                    elif sprite.id > 200:
+                        self.blob.collision(sprite, "Grey", self.grey_collision_flag)
+                        self.grey_collision_flag = 0
+                    # Otherwise it must be a brown rock
+                    elif sprite.id > 0:
+                        self.blob.collision(sprite, "Brown")
+                        self.enemy_collision_flag = 1
+                        self.grey_collision_flag = 1
+                        self.remaining_rocks -= 1
             else:
                 self.grey_collision_flag = 1
+                self.enemy_collision_flag = 1
+
+            # Collision between the enemy and the player
+            # enemy_player_collisions = pygame.sprite.spritecollide(self.blob,self.)
 
             # Collisions between space rocks and the enemy
             rock_enemy_collisions = pygame.sprite.spritecollide(self.enemy,self.all_rocks, False)
