@@ -38,8 +38,8 @@ class Game_Setup():
         "Returns one SpaceRock object"
 
         if position == None:
-            position = [int(random.gauss(400, 2000)),
-                        int(random.gauss(400, 2000))]
+            position = [int(random.gauss(ROCK_LOWER_GAUSS_X, ROCK_UPPER_GAUSS_X)),
+                        int(random.gauss(ROCK_LOWER_GAUSS_Y, ROCK_UPPER_GAUSS_Y))]
 
         if velocity == None:
             velocity = [random.randint(ROCK_START_VELOCITY[0],ROCK_START_VELOCITY[1]),

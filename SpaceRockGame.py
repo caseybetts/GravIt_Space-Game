@@ -14,6 +14,7 @@ from Calculations import (
     elastic_momentum
     )
 from config import *
+from Enemy import *
 from SpaceRock import *
 from Player import *
 from RadarPoint import *
@@ -107,6 +108,7 @@ class Space_Rock_Program():
         self.level_text_count = 0
         self.space_rock_set = []
         self.grey_collision_flag = 1
+        self.enemy_grey_collision_flag = 1
 
     def update_screen_position(self, player_rect):
         """Given the player's position, this determines the column and row of the screen on the map."""
@@ -171,6 +173,9 @@ class Space_Rock_Program():
 
         # Create text object for displaying the level
         level_text = self.level_font.render('Level {}'.format(self.game_level), False, (84,84,84))
+
+        # Create the enemy
+        self.enemy = Enemy(ENEMY_MASS, 20, 20)
 
         # Create sprite group of space rocks
         self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown")
@@ -277,6 +282,15 @@ class Space_Rock_Program():
             else:
                 self.grey_collision_flag = 1
 
+            # Collisions between space rocks and the enemy
+            rock_enemy_collisions = pygame.sprite.spritecollide(self.enemy,self.all_rocks, False)
+            if rock_enemy_collisions:
+                for rock in pygame.sprite.spritecollide(self.enemy,self.all_rocks, False):
+                    # If the last rock in the list is grey, then set the flag to False
+                    self.enemy_grey_collision_flag = self.enemy.collision(rock, self.enemy_grey_collision_flag)
+                    self.remaining_rocks -= self.enemy_grey_collision_flag
+            else:
+                self.enemy_grey_collision_flag = 1
 
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
@@ -308,6 +322,20 @@ class Space_Rock_Program():
 
             # Update the player position
             self.blob.update(
+                            self.all_sprites,
+                            self.key_down_flag,
+                            pressed_keys,
+                            self.screen,
+                            self.screen_col,
+                            self.screen_row,
+                            self.win_width,
+                            self.win_height,
+                            self.map_rect,
+                            self.radar_rect
+                            )
+
+            # Update the enemy position
+            self.enemy.update(
                             self.all_sprites,
                             self.key_down_flag,
                             pressed_keys,
