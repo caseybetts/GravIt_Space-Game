@@ -2,7 +2,8 @@
 
 ## A space game where you grab space rocks and grow your gravitational influence
 
-### Required Modules:
+### Required:
+Python 3
 pygame
 
 ### How to run:
@@ -16,4 +17,4 @@ Once the game is running you should see a window similar to the screenshot below
 
 One final note, as you thrust you are expelling matter into space and your total mass will reflect the mass ejected by your blob. If you accelerate too much you'll find yourself back at square one and have to hunt down more rocks to increase your mass again. Use your gravity to help you pull rocks toward yourself and see how massive you can get!
 
-![alt text](https://github.com/caseybetts/SpaceRock/blob/main/Graphics/Gameplay_screenshot.PNG?raw=true)
+![alt text](https://github.com/caseybetts/SpaceRock/blob/main/Graphics/Gameplay_screenshot2.PNG?raw=true)
