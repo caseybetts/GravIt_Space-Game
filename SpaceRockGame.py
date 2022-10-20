@@ -209,8 +209,9 @@ class Space_Rock_Program():
 
         while self.game_level == level:
 
+            self.events = pygame.event.get()
             # Loop through all the current pygame events in the queue
-            for event in pygame.event.get():
+            for event in self.events:
 
                 # Check if a key is currently pressed
                 if event.type == pygame.KEYDOWN:
@@ -356,7 +357,7 @@ class Space_Rock_Program():
             self.enemies.update(
                             self.all_sprites,
                             self.key_down_flag,
-                            pressed_keys,
+                            self.events,
                             self.screen,
                             self.screen_col,
                             self.screen_row,

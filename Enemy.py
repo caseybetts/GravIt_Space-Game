@@ -159,11 +159,10 @@ class Enemy(pygame.sprite.Sprite):
         return [horizontal > 0, vertical > 0]
 
     # Move the sprite based on AI logic
-    def update(self, all_sprites, key_down_flag, pressed_keys, screen, screen_col, screen_row, win_width, win_height, map_rect, radar_rect):
+    def update(self, all_sprites, key_down_flag, pygame_events, screen, screen_col, screen_row, win_width, win_height, map_rect, radar_rect):
 
         x_thrust = 0
         y_thrust = 0
-        pygame_events = pygame.event.get()
 
         # Horizontal speed check; slow the enemy if it's going too fast
         if self.velocity[0] > ENEMY_TOP_SPEED:
