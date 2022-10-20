@@ -16,20 +16,22 @@ from ThrustSprite import ThrustSprite
 
 class Enemy(pygame.sprite.Sprite):
     """This is the enemy sprite"""
-    def __init__(self, mass, x_size, y_size):
+
+    # Must pass in a mass (int), size (int), postion (2 element list), velocity (2 element list)
+    def __init__(self, id, mass, size, position, velocity):
         super(Enemy,self).__init__()
 
         # Mass, Position and Velocity parameters initialized
         self.mass = mass
-        self.velocity = [1,-2]
-        self.size = [x_size, y_size]
-        self.id = 1000
+        self.velocity = velocity
+        self.position = position
+        self.id = id
 
         # Create pygame Surface
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
-        self.surface = pygame.transform.scale(self.surface, self.size)
+        self.surface = pygame.transform.scale(self.surface, [size,size])
         self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = (1000,1000) )
+        self.rect = self.surface.get_rect( center = position )
 
         # Thrust sound and group
         self.thrust_sound = pygame.mixer.Sound(thrust_sound_location)
@@ -50,6 +52,9 @@ class Enemy(pygame.sprite.Sprite):
         self.radar_point_color = 'Yellow'
         self.radar_point_size = 2
 
+        # Sensor parameters
+        self.player_in_proximity_flag = False
+
     def thrust(self, direction):
 
         # Create a new thrust sprite and add it to the group
@@ -60,7 +65,8 @@ class Enemy(pygame.sprite.Sprite):
         self.mass *= 1-self.percent_ejection
 
         # Play a sound
-        self.thrust_sound.play()
+        if self.player_in_proximity_flag:
+            self.thrust_sound.play()
 
         # Calculate and return the amount of force
         return self.mass*self.percent_ejection*thrust_acc
@@ -122,14 +128,28 @@ class Enemy(pygame.sprite.Sprite):
         horizontal = 0
         vertical = 0
         # Determine which direction (left/right and up/down) there are the most rocks
-        for rock in all_sprites:
+        for sprite in all_sprites:
+
+            # Calculate the distance to the player
+            range_x = fabs(sprite.rect.centerx - self.rect.centerx)
+            range_y = fabs(sprite.rect.centery - self.rect.centery)
+
+            if sprite.id == 0:
+                if self.player_in_proximity_flag:
+                    if range_x > 1000 or range_y > 1000:
+                        self.player_in_proximity_flag = False
+                else:
+                    if  range_x < 1000 and range_y < 1000:
+                        self.player_in_proximity_flag = True
+
+
             # rock is to the right of the enemy
-            if rock.rect.centerx - self.rect.centerx > 0:
+            if sprite.rect.centerx - self.rect.centerx > 0:
                 horizontal += 1
             else:
                 horizontal -= 1
             # rock is below the enemy
-            if rock.rect.centery - self.rect.centery > 0:
+            if sprite.rect.centery - self.rect.centery > 0:
                 vertical += 1
             else:
                 vertical -= 1

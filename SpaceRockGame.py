@@ -152,16 +152,19 @@ class Space_Rock_Program():
             self.win_mass = 6e15
             self.brown_space_rock_set = LEVEL_1_BROWN_SET
             self.grey_space_rock_set = LEVEL_1_GREY_SET
+            self.enemy_specs = LEVEL_1_ENEMY_SPECS
         elif self.game_level == 2:
             self.number_of_rocks = 50
             self.win_mass = 8e15
             self.brown_space_rock_set = LEVEL_2_BROWN_SET
             self.grey_space_rock_set = LEVEL_2_GREY_SET
+            self.enemy_specs = LEVEL_2_ENEMY_SPECS
         elif self.game_level == 3:
             self.number_of_rocks = 20
             self.win_mass = 10e15
             self.brown_space_rock_set = LEVEL_3_BROWN_SET
             self.grey_space_rock_set = LEVEL_3_GREY_SET
+            self.enemy_specs = LEVEL_3_ENEMY_SPECS
 
         self.level_text_count = 100
 
@@ -175,7 +178,7 @@ class Space_Rock_Program():
         level_text = self.level_font.render('Level {}'.format(self.game_level), False, (84,84,84))
 
         # Create the enemy
-        self.enemy = Enemy(ENEMY_MASS, 20, 20)
+        self.enemies = self.setup.enemy_generator(self.enemy_specs)
 
         # Create sprite group of space rocks
         self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown")
@@ -191,9 +194,10 @@ class Space_Rock_Program():
         for rock in self.grey_rocks:
             self.all_sprites.add(rock)
             self.all_rocks.add(rock)
+        for sprite in self.enemies:
+            self.all_sprites.add(sprite)
         # Add the player to the all sprites group
         self.all_sprites.add(self.blob)
-        self.all_sprites.add(self.enemy)
 
         # Create variable for the number of rocks remaining
         self.remaining_rocks = len(self.brown_rocks.sprites()) + len(self.grey_rocks.sprites())
@@ -295,18 +299,16 @@ class Space_Rock_Program():
                 self.grey_collision_flag = 1
                 self.enemy_collision_flag = 1
 
-            # Collision between the enemy and the player
-            # enemy_player_collisions = pygame.sprite.spritecollide(self.blob,self.)
 
             # Collisions between space rocks and the enemy
-            rock_enemy_collisions = pygame.sprite.spritecollide(self.enemy,self.all_rocks, False)
-            if rock_enemy_collisions:
-                for rock in pygame.sprite.spritecollide(self.enemy,self.all_rocks, False):
-                    # If the last rock in the list is grey, then set the flag to False
-                    self.enemy_grey_collision_flag = self.enemy.collision(rock, self.enemy_grey_collision_flag)
-                    self.remaining_rocks -= self.enemy_grey_collision_flag
-            else:
-                self.enemy_grey_collision_flag = 1
+            # rock_enemy_collisions = pygame.sprite.spritecollide(self.enemy,self.all_rocks, False)
+            # if rock_enemy_collisions:
+            #     for rock in rock_enemy_collisions:
+            #         # If the last rock in the list is grey, then set the flag to False
+            #         self.enemy_grey_collision_flag = self.enemy.collision(rock, self.enemy_grey_collision_flag)
+            #         self.remaining_rocks -= self.enemy_grey_collision_flag
+            # else:
+            #     self.enemy_grey_collision_flag = 1
 
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
@@ -351,7 +353,7 @@ class Space_Rock_Program():
                             )
 
             # Update the enemy position
-            self.enemy.update(
+            self.enemies.update(
                             self.all_sprites,
                             self.key_down_flag,
                             pressed_keys,

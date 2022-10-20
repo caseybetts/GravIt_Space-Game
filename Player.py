@@ -132,8 +132,8 @@ class Player(pygame.sprite.Sprite):
                 final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
                 self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
                 self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                sprite.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
-                sprite.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
+                # sprite.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
+                # sprite.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
 
     def update(self, all_sprites, key_down_flag, pressed_keys, screen, screen_col, screen_row, win_width, win_height, map_rect, radar_rect):
         """ Move the sprite based on user keypresses """

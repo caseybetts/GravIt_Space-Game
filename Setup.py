@@ -4,20 +4,51 @@ import pygame
 import random
 
 from config import *
+from Enemy import *
 from SpaceRock import *
 from RadarPoint import *
 
 class Game_Setup():
-    "Provides functions needed to set up the game"
+    """Provides functions needed to set up the game"""
 
     def print_sprite(self, sprite):
-        "Prints the attributes of the sprite"
+        """Prints the attributes of the sprite"""
         print("id=", sprite.id,
                 "\nmass=", sprite.mass)
 
+    def enemy_generator(self, enemy_specs):
+        """ Produces a group of enemies of the given specs. The enemy_specs argument
+        should be a list of lists like [[quantity, mass, size], ...]"""
+
+        sprite_group = pygame.sprite.Group()
+
+        i = 1001
+
+        for group in enemy_specs:
+            print(group)
+            for j in range(group[0]):
+                sprite_group.add(self.make_enemy(i, group[1], group[2]))
+                i += 1
+
+        print(sprite_group)
+        return sprite_group
+
+    def make_enemy(self, id, mass, size, position = None, velocity = None):
+        """ Returns an enemy sprite """
+
+        if position == None:
+            position = [int(random.gauss(500,1000)),
+                        int(random.gauss(500,1000))]
+
+        if velocity == None:
+            velocity = [random.randint(-1,1),
+                        random.randint(-1,1)]
+
+        return Enemy(id, mass, size, position, velocity)
+
     def rock_generator(self, rock_specs, color):
         """Produces a group of rocks of the specified sizes. The rock_specs argument
-        should be a list of lists like { [rock size, quantity],...}"""
+        should be a list of lists like [ [quantity, rock size],...]"""
 
         if color == "Brown":
             i = 1
@@ -28,8 +59,8 @@ class Game_Setup():
         sprite_group = pygame.sprite.Group()
 
         for size_group in rock_specs:
-            for j in range(size_group[1]):
-                sprite_group.add(self.make_rock(i,size_group[0], color))
+            for j in range(size_group[0]):
+                sprite_group.add(self.make_rock(i,size_group[1], color))
                 i+=1
 
         return sprite_group
