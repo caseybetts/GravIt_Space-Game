@@ -42,7 +42,7 @@ class Player(pygame.sprite.Sprite):
         self.thrust_sound = pygame.mixer.Sound(thrust_sound_location)
         self.thrust_sound.set_volume(.75)
         self.thrust_group = pygame.sprite.Group()
-        self.percent_ejection = .002
+        self.percent_ejection = .003
 
         # Collision Sound
         self.collision_sound = pygame.mixer.Sound(gulp_sound_location)
@@ -55,6 +55,10 @@ class Player(pygame.sprite.Sprite):
 
         # Create gray collision flag
         self.grey_collision_flag = False
+
+        # Collision parameters
+        self.enemy_collision_flag = False
+        self.grey_rock_collision_flag = False
 
     def thrust(self, direction):
 
@@ -96,7 +100,7 @@ class Player(pygame.sprite.Sprite):
                             win_width,
                             win_height)
 
-    def collision(self, sprite, type, collision_flag = 0):
+    def collision(self, type, sprite):
 
         # If it's a brown rock, then kill the space rock and add the rock's mass to the player mass
         if type == "Brown":
@@ -110,14 +114,15 @@ class Player(pygame.sprite.Sprite):
         # Or if the collision is with a grey rock, update the player and rock velocities
         elif type == "Grey":
 
-            if collision_flag:
+            if not self.grey_rock_collision_flag:
                 # Elastic collision
                 final_x_velocities = elastic_momentum(self.mass, self.velocity[0], sprite.mass, sprite.velocity[0])
                 final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
                 self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
                 self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                sprite.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
-                sprite.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
+                # sprite.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
+                # sprite.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
+                self.grey_rock_collision_flag = True
 
         # Or if the collision is with an enemy, update the player and enemy velocities
         elif type == "Enemy":
@@ -126,12 +131,13 @@ class Player(pygame.sprite.Sprite):
             self.mass -= ENEMY_STEALING_AMMOUNT
             sprite.mass += ENEMY_STEALING_AMMOUNT
 
-            if collision_flag:
+            if not self.enemy_collision_flag:
                 # Elastic collision
                 final_x_velocities = elastic_momentum(self.mass, self.velocity[0], sprite.mass, sprite.velocity[0])
                 final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
                 self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
                 self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
+                self.enemy_collision_flag = True
                 # sprite.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
                 # sprite.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
 
