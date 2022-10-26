@@ -28,7 +28,7 @@ class Enemy(pygame.sprite.Sprite):
         self.id = id
 
         # Create pygame Surface
-        self.surface = pygame.image.load("Graphics/GreenBlob.png")
+        self.surface = pygame.image.load(enemy_image_location)
         self.surface = pygame.transform.scale(self.surface, [size,size])
         self.surface.set_colorkey((0,0,0), RLEACCEL)
         self.rect = self.surface.get_rect( center = position )
@@ -42,7 +42,7 @@ class Enemy(pygame.sprite.Sprite):
         self.thrust_mass_multiplyer = self.percent_ejection*thrust_acc
 
         # Only allow the enemy to thrust at a certain frequency
-        self.thrust_count = pygame.USEREVENT + 1
+        self.thrust_count = pygame.USEREVENT + 2
         pygame.time.set_timer(self.thrust_count, 500)
 
         # Collision Sound
@@ -93,7 +93,7 @@ class Enemy(pygame.sprite.Sprite):
 
         # If the collision is with the player, update the rock velocities to bounce off
         if type == "Player":
-
+            print("Collision with player. Flag=", self.player_collision_flag)
             if not self.player_collision_flag:
                 print("Enemy bounced off player. Start Vs", self.velocity)
                 # Elastic collision
@@ -212,7 +212,6 @@ class Enemy(pygame.sprite.Sprite):
 
         # Check if the majority of the rocks are to the right
         if self.rock_quadrant_majority[0] > 6:
-            print("the majority of the rocks are to the righ")
             # Check if the enemy is already moving to the right
             if self.velocity[0] <= 1.5:
                 self.thrust_direction[0] = 'right'

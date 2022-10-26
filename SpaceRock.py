@@ -70,6 +70,7 @@ class SpaceRock(pygame.sprite.Sprite):
         # Create radar point parameters
         self.radar_point_position = [0,0]
         self.radar_point_color = 'Red'
+
         self.radar_point_size = 2
 
     def change_size(self):
@@ -126,9 +127,9 @@ class SpaceRock(pygame.sprite.Sprite):
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
         # Remove space rock if it gets too far away
-        if self.rect.left < map_rect.left or self.rect.right > map_rect.right:
+        if self.rect.left < (map_rect.left - win_width/2) or self.rect.right > (map_rect.right + win_width/2):
             self.kill()
-        if self.rect.top < map_rect.top or self.rect.bottom > map_rect.bottom:
+        if self.rect.top < (map_rect.top - win_height*2) or self.rect.bottom > (map_rect.bottom + win_height/2):
             self.kill()
 
         # Update the radar point

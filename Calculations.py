@@ -106,9 +106,10 @@ def elastic_momentum(m1,v1,m2,v2):
         v2 += .1
 
     if m1 == m2:
-        m1 += 10
+        mass_ratio = 1.01
+    else:
+        mass_ratio = m1/m2
 
-    mass_ratio = m1/m2
     v1_final = ((1-mass_ratio)/(mass_ratio-1))*v1
     v2_final = v1 + v2 - v1_final
 

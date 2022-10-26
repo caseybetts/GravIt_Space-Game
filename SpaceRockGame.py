@@ -64,9 +64,6 @@ class Space_Rock_Program():
                     player_start_size_y
                     )
 
-        # Create radar point for the player
-        self.player_point = RadarPoint(0)
-
         # Calculate map boundaries in pixels based on number of screens map extends to
         self.map_left_boundary = -(int(map_size_width/2))*self.win_width
         self.map_right_boundary = ((int(map_size_width/2))+1)*self.win_width
@@ -99,6 +96,10 @@ class Space_Rock_Program():
 
         # Import background music
         self.bg_music = pygame.mixer.Sound(background_music_location)
+
+        # Create a level event to start the next level at a given interval
+        self.level_timer = pygame.USEREVENT + 1
+        pygame.time.set_timer(self.level_timer, 10000)
 
         # Variables
         self.key_down_flag = False
@@ -168,8 +169,40 @@ class Space_Rock_Program():
 
         self.level_text_count = 100
 
+        print("Level parameters set ")
+
+    def release_space_rocks(self):
+        print("releasing rocks")
+        if self.game_level == 1:
+            new_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown", self.win_width, self.win_height)
+        for rock in new_rocks:
+            self.brown_rocks.add(rock)
+            self.all_rocks.add(rock)
+            self.all_sprites.add(rock)
+            print(rock.velocity)
+
+    def release_enemies(self):
+        pass
+
+    def collision_handler(self):
+        """ Handels collision events between sprites """
+
+        # Get collided sprites between player and enemies
+
+        # Get collided sprites between player and brown rocks
+
+        # Get collided sprites between player and grey rocks
+
+        # Get collided sprites between enemies and enemies
+        myCollisions = pygame.sprite.groupcollide(self.brown_rocks, self.brown_rocks, False, False)
+        for element in myCollisions:
+            print(element)
+
+
+
     def game_loop(self, level):
         """ Runs the loop for the game"""
+        print("Running Game Loop")
 
         # Set the parameters for the current game level
         self.set_level_parameters()
@@ -181,8 +214,8 @@ class Space_Rock_Program():
         self.enemies = self.setup.enemy_generator(self.enemy_specs)
 
         # Create sprite group of space rocks
-        self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown")
-        self.grey_rocks = self.setup.rock_generator(self.grey_space_rock_set, "Grey")
+        self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown", self.win_width, self.win_height)
+        self.grey_rocks = self.setup.rock_generator(self.grey_space_rock_set, "Grey", self.win_width, self.win_height)
 
         # Create sprite group for all rocks and all sprites
         self.all_rocks = pygame.sprite.Group()
@@ -212,7 +245,6 @@ class Space_Rock_Program():
             self.events = pygame.event.get()
             # Loop through all the current pygame events in the queue
             for event in self.events:
-
                 # Check if a key is currently pressed
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -221,6 +253,8 @@ class Space_Rock_Program():
                         self.game_level = 0
                     elif event.key == K_m:
                         self.blob.mass *= 1.1
+                    elif event.key == K_LSHIFT and event.key == K_g:
+                        print("Next Level")
                     else:
                         # Change the key down flag to True
                         self.key_down_flag = True
@@ -229,11 +263,20 @@ class Space_Rock_Program():
                     # Reset the key down flag
                     self.key_down_flag = False
 
+                elif event.type == self.level_timer:
+                    print("level timer")
+                    # Increase the level and release the next wave
+                    self.release_space_rocks()
+                    self.release_enemies()
+
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
 
             # Get the set of keyboard keys pressed
             pressed_keys = pygame.key.get_pressed()
+
+            # collision_handler
+            #self.collision_handler()
 
             ## Check for collisions
             # Collisions between brown space rocks. If so, combine space rocks.
@@ -317,7 +360,7 @@ class Space_Rock_Program():
                             enemy.collision("Brown", sprite)
                             self.remaining_rocks -= 1
                     else:
-                        enemy.player_collisions = False
+                        enemy.player_collision_flag = False
                         enemy.enemy_collision_flag = False
                         enemy.grey_collision_flag = False
 
@@ -436,10 +479,6 @@ class Space_Rock_Program():
             # Check exit button for a click
             if self.exit_button.check_mouse():
                 self.game_level = -1
-
-            ## Changing game state
-            if not self.brown_rocks.sprites():  # If there are no more space rocks
-                self.game_level = 0
 
             # Check if your mass is great enough to win the level
             if self.blob.mass > self.win_mass:

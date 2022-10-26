@@ -120,26 +120,24 @@ class Player(pygame.sprite.Sprite):
                 final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
                 self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
                 self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                # sprite.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
-                # sprite.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
                 self.grey_rock_collision_flag = True
 
         # Or if the collision is with an enemy, update the player and enemy velocities
         elif type == "Enemy":
-
+            print("Collision with enemy. Flag=", self.enemy_collision_flag)
             # Enemy will steal your mass
             self.mass -= ENEMY_STEALING_AMMOUNT
             sprite.mass += ENEMY_STEALING_AMMOUNT
 
             if not self.enemy_collision_flag:
+                print("Player bounced off enemy. Start Vs", self.velocity)
                 # Elastic collision
                 final_x_velocities = elastic_momentum(self.mass, self.velocity[0], sprite.mass, sprite.velocity[0])
                 final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
                 self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
                 self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
                 self.enemy_collision_flag = True
-                # sprite.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[1]
-                # sprite.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[1]
+                print("Final Vs", self.velocity)
 
     def update(self, all_sprites, key_down_flag, pressed_keys, screen, screen_col, screen_row, win_width, win_height, map_rect, radar_rect):
         """ Move the sprite based on user keypresses """

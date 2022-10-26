@@ -25,12 +25,10 @@ class Game_Setup():
         i = 1001
 
         for group in enemy_specs:
-            print(group)
             for j in range(group[0]):
                 sprite_group.add(self.make_enemy(i, group[1], group[2]))
                 i += 1
 
-        print(sprite_group)
         return sprite_group
 
     def make_enemy(self, id, mass, size, position = None, velocity = None):
@@ -46,7 +44,7 @@ class Game_Setup():
 
         return Enemy(id, mass, size, position, velocity)
 
-    def rock_generator(self, rock_specs, color):
+    def rock_generator(self, rock_specs, color, win_width, win_height):
         """Produces a group of rocks of the specified sizes. The rock_specs argument
         should be a list of lists like [ [quantity, rock size],...]"""
 
@@ -60,17 +58,17 @@ class Game_Setup():
 
         for size_group in rock_specs:
             for j in range(size_group[0]):
-                sprite_group.add(self.make_rock(i,size_group[1], color))
+                sprite_group.add(self.make_rock(i,size_group[1], color, win_width, win_height))
                 i+=1
-
+        print("Returning rock group", color)
         return sprite_group
 
-    def make_rock(self, id, mass, color, position = None, velocity = None):
+    def make_rock(self, id, mass, color, win_width, win_height, position = None, velocity = None):
         "Returns one SpaceRock object"
 
         if position == None:
             position = [int(random.gauss(ROCK_LOWER_GAUSS_X, ROCK_UPPER_GAUSS_X)),
-                        int(random.gauss(ROCK_LOWER_GAUSS_Y, ROCK_UPPER_GAUSS_Y))]
+                        int(random.randint(-4*win_height, win_height))]
 
         if velocity == None:
             velocity = [random.randint(ROCK_START_VELOCITY[0],ROCK_START_VELOCITY[1]),
