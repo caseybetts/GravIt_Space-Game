@@ -43,7 +43,7 @@ class Enemy(pygame.sprite.Sprite):
 
         # Only allow the enemy to thrust at a certain frequency
         self.thrust_count = pygame.USEREVENT + 2
-        pygame.time.set_timer(self.thrust_count, 500)
+        pygame.time.set_timer(self.thrust_count, 1000)
 
         # Collision Sound
         self.collision_sound = pygame.mixer.Sound(gulp_sound_location)
@@ -60,6 +60,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rock_quadrant_majority = [0, 0]
 
         # Collision parameters
+        self.colliding_enemies = []
         self.enemy_collision_flag = False
         self.player_collision_flag = False
         self.grey_rock_collision_flag = False
@@ -103,17 +104,6 @@ class Enemy(pygame.sprite.Sprite):
                 self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
                 self.player_collision_flag = True
                 print("Final Vs", self.velocity)
-
-        # If it's a grey rock, update the enemy velocity to bounce off
-        elif type == "Enemy":
-
-            if not self.enemy_collision_flag:
-                # Elastic collision
-                final_x_velocities = elastic_momentum(self.mass, self.velocity[0], sprite.mass, sprite.velocity[0])
-                final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
-                self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
-                self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                self.enemy_collision_flag = True
 
         # If it's a grey rock, update the enemy velocity to bounce off
         elif type == "Grey":
@@ -207,7 +197,6 @@ class Enemy(pygame.sprite.Sprite):
 
         # No more thrust consideration is needed if the sprite is speeding
         if speeding == True:
-            print("speeding!   ", self.id)
             return 0
 
         # Check if the majority of the rocks are to the right

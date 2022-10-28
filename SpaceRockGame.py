@@ -82,7 +82,7 @@ class Space_Rock_Program():
 
         # Create Radar screen surface
         self.radar_screen = pygame.Surface(((map_width)*RADAR_REDUCTION,(map_height)*RADAR_REDUCTION))
-        self.radar_screen.fill((25,25,25))
+        self.radar_screen.fill((30,30,30))
         self.radar_screen.set_alpha(128)
         self.radar_rect = self.radar_screen.get_rect(left = radar_left, top = radar_top)
 
@@ -99,7 +99,7 @@ class Space_Rock_Program():
 
         # Create a level event to start the next level at a given interval
         self.level_timer = pygame.USEREVENT + 1
-        pygame.time.set_timer(self.level_timer, 10000)
+        pygame.time.set_timer(self.level_timer, 100000)
 
         # Variables
         self.key_down_flag = False
@@ -110,6 +110,7 @@ class Space_Rock_Program():
         self.space_rock_set = []
         self.grey_collision_flag = 1
         self.enemy_grey_collision_flag = 1
+        self.colliding_enemies = 1
 
     def update_screen_position(self, player_rect):
         """Given the player's position, this determines the column and row of the screen on the map."""
@@ -179,7 +180,6 @@ class Space_Rock_Program():
             self.brown_rocks.add(rock)
             self.all_rocks.add(rock)
             self.all_sprites.add(rock)
-            print(rock.velocity)
 
     def release_enemies(self):
         pass
@@ -187,18 +187,175 @@ class Space_Rock_Program():
     def collision_handler(self):
         """ Handels collision events between sprites """
 
-        # Get collided sprites between player and enemies
+        # Get collided sprites between PLAYER AND ENEMIES
+        player_enemy_collisions = pygame.sprite.spritecollide(self.blob, self.enemies, False)
+
+        # Create a list of enemies that were not colliding with the player before, but are now
+        new_collisions = [x for x in player_enemy_collisions if x not in self.blob.colliding_enemies]
+
+        # Create a list of enemies that were colliding with the player, but are not any more
+        no_longer_colliding = [x for x in self.blob.colliding_enemies if x not in player_enemy_collisions]
+
+        for sprite in new_collisions:
+            # Add sprite to colliding enemies list
+            self.blob.colliding_enemies.append(sprite)
+            # Find both end velocities
+            final_x_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[0], sprite.mass, sprite.velocity[0])
+            final_y_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[1], sprite.mass, sprite.velocity[1])
+            # Update their velocities
+            self.blob.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[0], BOUNCE_SLOW_PERCENT*final_y_velocities[0]]
+            sprite.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[1], BOUNCE_SLOW_PERCENT*final_y_velocities[1]]
+
+        for sprite in no_longer_colliding:
+            self.blob.colliding_enemies.remove(sprite)
 
         # Get collided sprites between player and brown rocks
+        player_brown_collisions = pygame.sprite.spritecollide(self.blob,self.brown_rocks, True)
+
+        for sprite in player_brown_collisions:
+            # Kill the space rock and add the rock's mass to the player mass
+            print( sprite.id )
+            self.blob.mass += sprite.mass
+            self.blob.velocity = [momentum(self.blob.mass,self.blob.velocity[0], sprite.mass, sprite.velocity[0])/2,
+                            momentum(self.blob.mass,self.blob.velocity[1], sprite.mass, sprite.velocity[1])/2]
+            self.blob.collision_sound.play()
 
         # Get collided sprites between player and grey rocks
+        player_grey_collisions = pygame.sprite.spritecollide(self.blob,self.grey_rocks, False)
 
-        # Get collided sprites between enemies and enemies
-        myCollisions = pygame.sprite.groupcollide(self.brown_rocks, self.brown_rocks, False, False)
-        for element in myCollisions:
-            print(element)
+        # Create a list of grey rocks that were not colliding with the player, but are now
+        new_collisions = [x for x in player_grey_collisions if x not in self.blob.colliding_grey]
 
+        # Create a list of grey rocks that were colliding with the player, but no longer are
+        no_longer_colliding = [x for x in self.blob.colliding_grey if x not in player_grey_collisions]
 
+        for sprite in new_collisions:
+            # Add sprite to colliding enemies list
+            self.blob.colliding_grey.append(sprite)
+            # Find both end velocities
+            final_x_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[0], sprite.mass, sprite.velocity[0])
+            final_y_velocities = elastic_momentum(self.blob.mass, self.blob.velocity[1], sprite.mass, sprite.velocity[1])
+            # Update their velocities
+            self.blob.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[0], BOUNCE_SLOW_PERCENT*final_y_velocities[0]]
+            sprite.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[1], BOUNCE_SLOW_PERCENT*final_y_velocities[1]]
+
+        for sprite in no_longer_colliding:
+            self.blob.colliding_grey.remove(sprite)
+
+        # Get collided sprites between ENEMIES AND ENEMIES
+        enemy_collisions = pygame.sprite.groupcollide(self.enemies, self.enemies, False, False)
+
+        for enemy in enemy_collisions:
+            # Create a list of enemies that were not colliding with this enemy before, but are now
+            new_collisions = [x for x in enemy_collisions[enemy] if x not in enemy.colliding_enemies]
+
+            # Create a list of enemies that were colliding with this enemy, but are not any more
+            no_longer_colliding = [x for x in enemy.colliding_enemies if x not in enemy_collisions[enemy]]
+
+            for sprite in new_collisions:
+                # Add sprite to colliding enemies list
+                enemy.colliding_enemies.append(sprite)
+                # Find both end velocities
+                final_x_velocities = elastic_momentum(enemy.mass, enemy.velocity[0], sprite.mass, sprite.velocity[0])
+                final_y_velocities = elastic_momentum(enemy.mass, enemy.velocity[1], sprite.mass, sprite.velocity[1])
+                # Update their velocities
+                enemy.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[0], BOUNCE_SLOW_PERCENT*final_y_velocities[0]]
+                sprite.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[1], BOUNCE_SLOW_PERCENT*final_y_velocities[1]]
+
+            for sprite in no_longer_colliding:
+                enemy.colliding_enemies.remove(sprite)
+
+    def update_sprite_positions(self):
+        """ Update the posistions of all the sprites """
+
+        # Get the set of keyboard keys pressed
+        pressed_keys = pygame.key.get_pressed()
+
+        # Update the player position
+        self.blob.update(
+                        self.all_sprites,
+                        self.key_down_flag,
+                        pressed_keys,
+                        self.screen,
+                        self.screen_col,
+                        self.screen_row,
+                        self.win_width,
+                        self.win_height,
+                        self.map_rect,
+                        self.radar_rect
+                        )
+
+        # Update the enemy position
+        self.enemies.update(
+                        self.all_sprites,
+                        self.key_down_flag,
+                        self.events,
+                        self.screen,
+                        self.screen_col,
+                        self.screen_row,
+                        self.win_width,
+                        self.win_height,
+                        self.map_rect,
+                        self.radar_rect
+                        )
+
+        # Update the brown_rocks
+        for entity in self.all_rocks:
+            entity.update(
+                            self.all_sprites,
+                            self.map_rect,
+                            self.screen,
+                            self.screen_col,
+                            self.screen_row,
+                            self.win_width,
+                            self.win_height,
+                            self.radar_rect)
+
+    def heads_up_display(self):
+        """ Display all text and radar objects during gameplay """
+
+        # Blit the radar screen on the window
+        self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
+
+        # Calculate the display position of the shadow of the active screen on the radar
+        screen_position = radar_coord_conversion(
+                                    self.screen_col*self.win_width,
+                                    self.screen_row*self.win_height,
+                                    RADAR_REDUCTION,
+                                    self.radar_rect,
+                                    self.map_rect
+                                    )
+
+        # Draw the shadow of the active screen on the radar screen
+        pygame.draw.rect(
+                        self.screen,
+                        (40,40,40),
+                        (   screen_position[0],
+                            screen_position[1],
+                            self.win_width*RADAR_REDUCTION,
+                            self.win_height*RADAR_REDUCTION)
+                        )
+
+        # Display the current percent_ejection value
+        percent_ejection_label_surf = self.font.render('Thrust Control', False, (64,64,64))
+        percent_ejection_surf = self.font.render('{}'.format(round(self.blob.percent_ejection,4)), False, (64,64,64))
+        self.screen.blit(percent_ejection_label_surf, (15, (self.win_height/4)-150))
+        self.screen.blit(percent_ejection_surf,(15,(self.win_height/4)-100))
+
+        # Display the current mass of the player
+        disp_mass = exponent_split(self.blob.mass)
+        mass_text_surf = self.font.render(
+                                    'Current Mass: {mass} e {disp_mass} kg              Space Rocks Remaining: {remaining_rocks}'.format(mass=round(disp_mass[0],2),disp_mass=disp_mass[1],remaining_rocks=self.remaining_rocks),
+                                    False,
+                                    (64,64,64))
+        self.screen.blit(mass_text_surf,(10,10))
+
+        # Blit the exit button
+        self.screen.blit(self.exit_button.text, self.exit_button.text_rect)
+
+        # BLit the mass changing buttons
+        self.screen.blit(self.increase_mass_button.image, self.increase_mass_button.rect)
+        self.screen.blit(self.decrease_mass_button.image, self.decrease_mass_button.rect)
 
     def game_loop(self, level):
         """ Runs the loop for the game"""
@@ -252,7 +409,7 @@ class Space_Rock_Program():
                     elif event.key == K_d:
                         self.game_level = 0
                     elif event.key == K_m:
-                        self.blob.mass *= 1.1
+                        self.blob.mass *= .9
                     elif event.key == K_LSHIFT and event.key == K_g:
                         print("Next Level")
                     else:
@@ -272,11 +429,8 @@ class Space_Rock_Program():
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
 
-            # Get the set of keyboard keys pressed
-            pressed_keys = pygame.key.get_pressed()
-
             # collision_handler
-            #self.collision_handler()
+            self.collision_handler()
 
             ## Check for collisions
             # Collisions between brown space rocks. If so, combine space rocks.
@@ -321,149 +475,17 @@ class Space_Rock_Program():
                         rock.velocity[0] *= collision_slow_percent
                         rock.velocity[1] *= collision_slow_percent
 
-            # Collisions with the player
-            player_collisions = pygame.sprite.spritecollide(self.blob,self.all_sprites, False)
-            if len(player_collisions) == 2:
-                for sprite in player_collisions:
-                    # Check if the sprite is an enemy
-                    if sprite.id >= 1000:
-                        self.blob.collision("Enemy", sprite)
-                    # Or if the sprite is a grey rock
-                    elif sprite.id > 200:
-                        self.blob.collision("Grey", sprite)
-                    # Otherwise it must be a brown rock
-                    elif sprite.id > 0:
-                        self.blob.collision("Brown", sprite)
-                        self.remaining_rocks -= 1
-            else:
-                self.blob.player_collisions = False
-                self.blob.enemy_collision_flag = False
-                self.blob.grey_collision_flag = False
-
-
-            # Collisions with the enemies
-            for enemy in self.enemies:
-                enemy_collisions = pygame.sprite.spritecollide(enemy,self.all_sprites, False)
-                if len(enemy_collisions) == 2:
-                    for sprite in enemy_collisions:
-                        # Check if the sprite is the player:
-                        if sprite.id == 0:
-                            enemy.collision("Player", sprite)
-                        # Or if the sprite is an enemy
-                        elif sprite.id >= 1000:
-                            enemy.collision("Enemy", sprite)
-                        # Or if the sprite is a grey rock
-                        elif sprite.id > 200:
-                            enemy.collision("Grey", sprite)
-                        # Otherwise it must be a brown rock
-                        elif sprite.id > 0:
-                            enemy.collision("Brown", sprite)
-                            self.remaining_rocks -= 1
-                    else:
-                        enemy.player_collision_flag = False
-                        enemy.enemy_collision_flag = False
-                        enemy.grey_collision_flag = False
-
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
 
             # Blit the background
             self.screen.blit(self.bg_image,(0,0))
 
-            # Blit the radar screen on the window
-            self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
+            # Display text and radar
+            self.heads_up_display()
 
-            # Calculate the display position of the shadow of the active screen on the radar
-            screen_position = radar_coord_conversion(
-                                        self.screen_col*self.win_width,
-                                        self.screen_row*self.win_height,
-                                        RADAR_REDUCTION,
-                                        self.radar_rect,
-                                        self.map_rect
-                                        )
-
-            # Draw the shadow of the active screen on the radar screen
-            pygame.draw.rect(
-                            self.screen,
-                            (40,40,40),
-                            (   screen_position[0],
-                                screen_position[1],
-                                self.win_width*RADAR_REDUCTION,
-                                self.win_height*RADAR_REDUCTION)
-                            )
-
-            # Update the player position
-            self.blob.update(
-                            self.all_sprites,
-                            self.key_down_flag,
-                            pressed_keys,
-                            self.screen,
-                            self.screen_col,
-                            self.screen_row,
-                            self.win_width,
-                            self.win_height,
-                            self.map_rect,
-                            self.radar_rect
-                            )
-
-            # Update the enemy position
-            self.enemies.update(
-                            self.all_sprites,
-                            self.key_down_flag,
-                            self.events,
-                            self.screen,
-                            self.screen_col,
-                            self.screen_row,
-                            self.win_width,
-                            self.win_height,
-                            self.map_rect,
-                            self.radar_rect
-                            )
-
-            # Update the brown_rocks
-            for entity in self.brown_rocks:
-                entity.update(
-                                self.all_sprites,
-                                self.map_rect,
-                                self.screen,
-                                self.screen_col,
-                                self.screen_row,
-                                self.win_width,
-                                self.win_height,
-                                self.radar_rect)
-
-            # Update the space grey rocks
-            for entity in self.grey_rocks:
-                entity.update(
-                                self.all_sprites,
-                                self.map_rect,
-                                self.screen,
-                                self.screen_col,
-                                self.screen_row,
-                                self.win_width,
-                                self.win_height,
-                                self.radar_rect)
-
-            # Display the current percent_ejection value
-            percent_ejection_label_surf = self.font.render('Thrust Control', False, (64,64,64))
-            percent_ejection_surf = self.font.render('{}'.format(round(self.blob.percent_ejection,4)), False, (64,64,64))
-            self.screen.blit(percent_ejection_label_surf, (15, (self.win_height/4)-150))
-            self.screen.blit(percent_ejection_surf,(15,(self.win_height/4)-100))
-
-            # Display the current mass of the player
-            disp_mass = exponent_split(self.blob.mass)
-            mass_text_surf = self.font.render(
-                                        'Current Mass: {mass} e {disp_mass} kg              Space Rocks Remaining: {remaining_rocks}'.format(mass=round(disp_mass[0],2),disp_mass=disp_mass[1],remaining_rocks=self.remaining_rocks),
-                                        False,
-                                        (64,64,64))
-            self.screen.blit(mass_text_surf,(10,10))
-
-            # Blit the exit button
-            self.screen.blit(self.exit_button.text, self.exit_button.text_rect)
-
-            # BLit the mass changing buttons
-            self.screen.blit(self.increase_mass_button.image, self.increase_mass_button.rect)
-            self.screen.blit(self.decrease_mass_button.image, self.decrease_mass_button.rect)
+            # Update sprite positions
+            self.update_sprite_positions()
 
             # Display the current level at start of level
             if self.level_text_count > 0:
