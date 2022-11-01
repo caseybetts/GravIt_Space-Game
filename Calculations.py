@@ -14,7 +14,7 @@ def find_force(sprite_group, xcoord, ycoord, mass, ID):
     total_force_y = 0
 
     for i in range(num):
-        # remove target sprite from the list; save to variable
+        # remove target sprite from the list
         if sprites[i].id == ID:
             sprites.pop(i)
             break

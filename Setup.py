@@ -44,31 +44,31 @@ class Game_Setup():
 
         return Enemy(id, mass, size, position, velocity)
 
-    def rock_generator(self, rock_specs, color, win_width, win_height):
-        """Produces a group of rocks of the specified sizes. The rock_specs argument
-        should be a list of lists like [ [quantity, rock size],...]"""
-
-        if color == "Brown":
-            i = 1
-        elif color == "Grey":
-            i = 200
+    def rock_generator(self, rock_specs, color, rock_id):
+        """Produces a group of rocks of the specified sizes.
+        The rock_specs argument should be a list of lists like [ [quantity, rock size],...]
+        color should be "Brown" or "Grey"
+        rock_id should be the highest id currently in existance"""
 
         # Create a sprite group to contain the rocks
         sprite_group = pygame.sprite.Group()
 
+        i = rock_id + 1
+
         for size_group in rock_specs:
             for j in range(size_group[0]):
-                sprite_group.add(self.make_rock(i,size_group[1], color, win_width, win_height))
+                sprite_group.add(self.make_random_rock(i, color, size_group[1]))
                 i+=1
         print("Returning rock group", color)
         return sprite_group
 
-    def make_rock(self, id, mass, color, win_width, win_height, position = None, velocity = None):
-        "Returns one SpaceRock object"
+    def make_rock(self, id, mass, color, position = None, velocity = None):
+        """Returns one SpaceRock object
+        If random is True, then provide the range """
 
         if position == None:
             position = [int(random.gauss(ROCK_LOWER_GAUSS_X, ROCK_UPPER_GAUSS_X)),
-                        int(random.randint(-4*win_height, win_height))]
+                        int(random.randint(-4*location[0], location[1]))]
 
         if velocity == None:
             velocity = [random.randint(ROCK_START_VELOCITY[0],ROCK_START_VELOCITY[1]),
@@ -76,19 +76,20 @@ class Game_Setup():
 
         return SpaceRock( id, mass, color, position[0], position[1], velocity[0], velocity[1])
 
-    def make_random_rock(self, id, x_bound, y_bound, mass = None):
-        # returns a space rock of random mass and position
+    def make_random_rock(self, id, color, mass = None):
+        """ returns a space rock of random mass and position.
+            The range controling the position is set in the config file """
 
         # If a mass is not given then choose a random mass from the list
         if mass == None:
             mass = random.choice(MASSES)
 
-        x_position = random.randint(x_bound[0], x_bound[1])
-        y_position = random.randint(y_bound[0], y_bound[1])
+        x_position = random.randint(ROCK_LOWER_GAUSS_X, ROCK_UPPER_GAUSS_X)
+        y_position = random.randint(ROCK_LOWER_GAUSS_Y, ROCK_UPPER_GAUSS_Y)
         x_velocity = random.randint(ROCK_START_VELOCITY[0],ROCK_START_VELOCITY[1])
         y_velocity = random.randint(ROCK_START_VELOCITY[0],ROCK_START_VELOCITY[1])
-        rand_rock = SpaceRock( id, mass, x_position, y_position, x_velocity, y_velocity)
-        return rand_rock
+
+        return SpaceRock( id, mass, color, x_position, y_position, x_velocity, y_velocity)
 
     def make_random_rocks(self, num, x_bound, y_bound):
         # Create a sprite group to contain random space rocks

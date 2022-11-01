@@ -49,7 +49,7 @@ ROCK_START_VELOCITY = (0,2)
 ROCK_LOWER_GAUSS_X = -1000
 ROCK_UPPER_GAUSS_X = 2000
 ROCK_LOWER_GAUSS_Y = -1000
-ROCK_UPPER_GAUSS_Y = 1000
+ROCK_UPPER_GAUSS_Y = 2000
 
 # Set how many screens the map consists of
 map_size_width = 7
@@ -61,13 +61,13 @@ RADAR_REDUCTION = .04
 # Level parameters
 LEVEL_1_BROWN_SET = [
                 [ 0, "HUGE_MASS"],
-                [10, "BIG_MASS"],
-                [10, "MED_MASS"],
-                [10, "SMALL_MASS"]]
+                [30, "BIG_MASS"],
+                [5, "MED_MASS"],
+                [3, "SMALL_MASS"]]
 LEVEL_1_GREY_SET = [
-                [10, "BIG_MASS"],
-                [ 5, "MED_MASS"],
-                [ 5, "SMALL_MASS"]]
+                [30, "BIG_MASS"],
+                [ 0, "MED_MASS"],
+                [ 0, "SMALL_MASS"]]
 
 LEVEL_2_BROWN_SET = [
                 [ 0, "HUGE_MASS"],

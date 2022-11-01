@@ -21,6 +21,7 @@ class SpaceRock(pygame.sprite.Sprite):
         # Position and Velocity parameters initialized
         self.velocity = [velocity_x, velocity_y]
         self.id = id
+        self.color = color
 
         # Choose meteor soze based on color
         if color == "Brown":

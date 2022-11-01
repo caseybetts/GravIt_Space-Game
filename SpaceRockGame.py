@@ -99,7 +99,7 @@ class Space_Rock_Program():
 
         # Create a level event to start the next level at a given interval
         self.level_timer = pygame.USEREVENT + 1
-        pygame.time.set_timer(self.level_timer, 100000)
+        pygame.time.set_timer(self.level_timer, 5000)
 
         # Variables
         self.key_down_flag = False
@@ -174,9 +174,15 @@ class Space_Rock_Program():
 
     def release_space_rocks(self):
         print("releasing rocks")
+
+        rock_id = 0
+        # Find the highest rock id
+        for rock in self.all_rocks:
+            if rock.id > rock_id:
+                rock_id = rock.id
+
         if self.game_level == 1:
-            new_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown", self.win_width, self.win_height)
-        for rock in new_rocks:
+            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Brown", 0, -4*self.win_height, 0, 2)
             self.brown_rocks.add(rock)
             self.all_rocks.add(rock)
             self.all_sprites.add(rock)
@@ -187,7 +193,8 @@ class Space_Rock_Program():
     def collision_handler(self):
         """ Handels collision events between sprites """
 
-        # Get collided sprites between PLAYER AND ENEMIES
+        ############# PLAYER AND ENEMIES #############
+        # Get collided sprites
         player_enemy_collisions = pygame.sprite.spritecollide(self.blob, self.enemies, False)
 
         # Create a list of enemies that were not colliding with the player before, but are now
@@ -209,7 +216,8 @@ class Space_Rock_Program():
         for sprite in no_longer_colliding:
             self.blob.colliding_enemies.remove(sprite)
 
-        # Get collided sprites between player and brown rocks
+        ############# PLAYER AND BROWN ROCKS #############
+        # Get collided sprites
         player_brown_collisions = pygame.sprite.spritecollide(self.blob,self.brown_rocks, True)
 
         for sprite in player_brown_collisions:
@@ -220,7 +228,8 @@ class Space_Rock_Program():
                             momentum(self.blob.mass,self.blob.velocity[1], sprite.mass, sprite.velocity[1])/2]
             self.blob.collision_sound.play()
 
-        # Get collided sprites between player and grey rocks
+        ############# PLAYER AND GREY ROCKS #############
+        # Get collided sprites
         player_grey_collisions = pygame.sprite.spritecollide(self.blob,self.grey_rocks, False)
 
         # Create a list of grey rocks that were not colliding with the player, but are now
@@ -242,7 +251,8 @@ class Space_Rock_Program():
         for sprite in no_longer_colliding:
             self.blob.colliding_grey.remove(sprite)
 
-        # Get collided sprites between ENEMIES AND ENEMIES
+        ############# ENEMIES AND ENEMIES #############
+        # Get collided sprites
         enemy_collisions = pygame.sprite.groupcollide(self.enemies, self.enemies, False, False)
 
         for enemy in enemy_collisions:
@@ -264,6 +274,90 @@ class Space_Rock_Program():
 
             for sprite in no_longer_colliding:
                 enemy.colliding_enemies.remove(sprite)
+
+
+        ############# BROWN ROCKS AND BROWN ROCKS #############
+        # Get collided sprites
+        brown_collisions = pygame.sprite.groupcollide(self.brown_rocks, self.brown_rocks, False, False)
+
+        for rock in brown_collisions:
+
+            if len(brown_collisions[rock]) > 1:
+
+                for sprite in brown_collisions[rock]:
+
+                    if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
+
+                        if sprite.mass > rock.mass:
+                            sprite.mass += rock.mass
+                            sprite.change_size()
+                            rock.kill()
+                        else:
+                            rock.mass += sprite.mass
+                            rock.change_size()
+                            sprite.kill()
+                        self.remaining_rocks -= 1
+                    else:
+                        sprite.velocity[0] *= collision_slow_percent
+                        sprite.velocity[1] *= collision_slow_percent
+                        rock.velocity[0] *= collision_slow_percent
+                        rock.velocity[1] *= collision_slow_percent
+
+        ############# GREY ROCKS AND GREY ROCKS #############
+        # Get collided sprites
+        grey_collisions = pygame.sprite.groupcollide(self.grey_rocks, self.grey_rocks, False, False)
+
+        for rock in grey_collisions:
+
+            if len(grey_collisions[rock]) > 1:
+
+                for sprite in grey_collisions[rock]:
+
+                    if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
+
+                        if sprite.mass > rock.mass:
+                            sprite.mass += rock.mass
+                            sprite.change_size()
+                            rock.kill()
+                        else:
+                            rock.mass += sprite.mass
+                            rock.change_size()
+                            sprite.kill()
+                        self.remaining_rocks -= 1
+                    else:
+                        sprite.velocity[0] *= collision_slow_percent
+                        sprite.velocity[1] *= collision_slow_percent
+                        rock.velocity[0] *= collision_slow_percent
+                        rock.velocity[1] *= collision_slow_percent
+
+
+        ############# BROWN ROCKS AND GREY ROCKS #############
+        # Get collided sprites
+        brown_collisions = pygame.sprite.groupcollide(self.brown_rocks, self.grey_rocks, False, False)
+
+        for rock in brown_collisions:
+
+            if len(brown_collisions[rock]) > 1:
+
+                for sprite in brown_collisions[rock]:
+                    sprite.velocity[0] *= collision_slow_percent
+                    sprite.velocity[1] *= collision_slow_percent
+                    rock.velocity[0] *= collision_slow_percent
+                    rock.velocity[1] *= collision_slow_percent
+
+        ############# GREY ROCKS AND BROWN ROCKS #############
+        # Get collided sprites
+        grey_collisions = pygame.sprite.groupcollide(self.grey_rocks, self.brown_rocks, False, False)
+
+        for rock in grey_collisions:
+
+            if len(grey_collisions[rock]) > 1:
+
+                for sprite in grey_collisions[rock]:
+                    sprite.velocity[0] *= collision_slow_percent
+                    sprite.velocity[1] *= collision_slow_percent
+                    rock.velocity[0] *= collision_slow_percent
+                    rock.velocity[1] *= collision_slow_percent
 
     def update_sprite_positions(self):
         """ Update the posistions of all the sprites """
@@ -299,7 +393,7 @@ class Space_Rock_Program():
                         self.radar_rect
                         )
 
-        # Update the brown_rocks
+        # Update all the rocks
         for entity in self.all_rocks:
             entity.update(
                             self.all_sprites,
@@ -371,8 +465,8 @@ class Space_Rock_Program():
         self.enemies = self.setup.enemy_generator(self.enemy_specs)
 
         # Create sprite group of space rocks
-        self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown", self.win_width, self.win_height)
-        self.grey_rocks = self.setup.rock_generator(self.grey_space_rock_set, "Grey", self.win_width, self.win_height)
+        self.brown_rocks = self.setup.rock_generator(self.brown_space_rock_set, "Brown", 0)
+        self.grey_rocks = self.setup.rock_generator(self.grey_space_rock_set, "Grey", 200)
 
         # Create sprite group for all rocks and all sprites
         self.all_rocks = pygame.sprite.Group()
@@ -388,6 +482,9 @@ class Space_Rock_Program():
             self.all_sprites.add(sprite)
         # Add the player to the all sprites group
         self.all_sprites.add(self.blob)
+
+        for rock in self.all_rocks:
+            print(rock.id)
 
         # Create variable for the number of rocks remaining
         self.remaining_rocks = len(self.brown_rocks.sprites()) + len(self.grey_rocks.sprites())
@@ -429,51 +526,12 @@ class Space_Rock_Program():
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
 
+            # DIAGNOSIC ######################
+            # for rock in self.brown_rocks:
+            #     print(rock.id)
+
             # collision_handler
             self.collision_handler()
-
-            ## Check for collisions
-            # Collisions between brown space rocks. If so, combine space rocks.
-            for rock in self.brown_rocks:
-                rock_collision = pygame.sprite.spritecollideany(rock, self.brown_rocks)
-
-                if rock_collision.id != rock.id:
-
-                    if abs(rock_collision.velocity[0] - rock.velocity[0]) < 1 and abs(rock_collision.velocity[1] - rock.velocity[1]) < 1:
-
-                        if rock_collision.mass > rock.mass:
-                            rock_collision.mass += rock.mass
-                            rock_collision.change_size()
-                            rock.kill()
-                        else:
-                            rock.mass += rock_collision.mass
-                            rock_collision.kill()
-                        self.remaining_rocks = len(self.brown_rocks.sprites())
-                    else:
-                        rock_collision.velocity[0] *= collision_slow_percent
-                        rock_collision.velocity[1] *= collision_slow_percent
-                        rock.velocity[0] *= collision_slow_percent
-                        rock.velocity[1] *= collision_slow_percent
-
-            # Collisions between grey space rocks. If so, combine space rocks.
-            for rock in self.grey_rocks:
-                rock_collision = pygame.sprite.spritecollideany(rock, self.grey_rocks)
-                if rock_collision.id != rock.id:
-                    if abs(rock_collision.velocity[0] - rock.velocity[0]) < 1 and abs(rock_collision.velocity[1] - rock.velocity[1]) < 1:
-                        if rock_collision.mass > rock.mass:
-                            rock_collision.mass += rock.mass
-                            rock_collision.change_size()
-                            rock.kill()
-
-                        else:
-                            rock.mass += rock_collision.mass
-                            rock_collision.kill()
-                        self.remaining_rocks = len(self.grey_rocks.sprites())+len(self.brown_rocks.sprites())
-                    else:
-                        rock_collision.velocity[0] *= collision_slow_percent
-                        rock_collision.velocity[1] *= collision_slow_percent
-                        rock.velocity[0] *= collision_slow_percent
-                        rock.velocity[1] *= collision_slow_percent
 
             # Update the coloumn and row of the screen on the map
             self.update_screen_position(self.blob.rect)
