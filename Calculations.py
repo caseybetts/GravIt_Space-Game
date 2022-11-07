@@ -1,5 +1,5 @@
 # This file holds all the calculation functions for the game
-from math import sqrt, sin, cos, atan, fabs
+from math import sqrt, sin, cos, atan, fabs, tan
 from config import grav_threshold
 
 #Constants
@@ -99,21 +99,47 @@ def momentum(m1,v1,m2,v2):
     final_velocity = (m1*v1 + m2*v2)/(m1+m2)
     return final_velocity
 
-def elastic_momentum(m1,v1,m2,v2):
-    # returns the velocities of the two objects after collision
-    if v1 == 0 or v2 == 0:
-        v1 += .1
-        v2 += .1
+def calculate_collision_force(sprite_1, sprite_2):
+    """ Returns the force on each sprite as a result of their collision """
 
-    if m1 == m2:
-        mass_ratio = 1.01
-    else:
-        mass_ratio = m1/m2
+    # Define hardness factor
+    k = 100
 
-    v1_final = ((1-mass_ratio)/(mass_ratio-1))*v1
-    v2_final = v1 + v2 - v1_final
+    # Calculate the distance between the center of the sprites
+    dist_from_centers_x = sprite_1.rect.centerx - sprite_2.rect.centerx
+    dist_from_centers_y = sprite_1.rect.centery - sprite_2.rect.centery
 
-    return [v1_final, v2_final]
+    # Can't allow distance be zero or div/0 error occurs
+    if dist_from_centers_x == 0: dist_from_centers_x = .001
+    if dist_from_centers_y == 0: dist_from_centers_y = .001
+
+    norm = sqrt((dist_from_centers_x**2) + (dist_from_centers_y**2))
+
+    separation = norm - (sprite_1.radius + sprite_2.radius)
+    print("Separation:", separation)
+
+    # If the distance is less than the combined radiuses, continue
+    if separation < 0:
+
+        # Calculate force on sprite 1
+        total_force_on_1 = fabs(k * sprite_2.mass * (separation**4))
+
+        # Put a check on how high the force can be
+        if total_force_on_1 > 80000*sprite_1.mass:
+            print("max force reached")
+            total_force_on_1 = 80000*sprite_1.mass
+
+        # Calculate the angle of the force
+        angle = atan(fabs(dist_from_centers_y)/fabs(dist_from_centers_x))
+
+        # Break the total force into x and y components
+        force_on_1_x = total_force_on_1*cos(angle)*(1/dist_from_centers_x)
+        force_on_1_y = total_force_on_1*sin(angle)*(1/dist_from_centers_y)
+
+        print("collision force:", [ [force_on_1_x, force_on_1_y], [-force_on_1_x, -force_on_1_y] ])
+        return [ [force_on_1_x, force_on_1_y], [-force_on_1_x, -force_on_1_y] ]
+
+    return [[0,0],[0,0]]
 
 def exponent_split(num):
     """Convert exponential notation to value and exponent"""
@@ -129,3 +155,51 @@ def exponent_split(num):
             num*=10
             count-=1
     return [num, count]
+
+def calculate_collision_force_test(dict_1, dict_2):
+    """ Returns the force on each sprite as a result of their collision """
+    print("dict_1:", dict_1)
+    print("dict_2:", dict_2)
+
+    # Define hardness
+    k = 10
+
+    # Calculate the distance between the center of the sprites
+    dist_from_centers_x = dict_1["centerx"] - dict_2["centerx"]
+    dist_from_centers_y = dict_1["centery"] - dict_2["centery"]
+    print("dist from centers x:", dist_from_centers_x)
+    print("dist from centers y:", dist_from_centers_y)
+
+    norm = sqrt((dist_from_centers_x**2) + (dist_from_centers_y**2))
+    print("norm:", norm)
+
+    separation = norm - (dict_1["radius"]+dict_2["radius"])
+    print("separation:", separation)
+
+    # If the distance is less than the combined radiuses, continue
+    if separation < 0:
+
+        # Calculate force on sprite 1
+        total_force_on_1 = fabs(k*separation)
+        print("total_force_on_1:", total_force_on_1)
+
+        # Calculate the angle of the force
+        angle = atan(fabs(dist_from_centers_y)/fabs(dist_from_centers_x))
+        print("angle: atan(",dist_from_centers_y,"/", dist_from_centers_x,") = ", angle)
+
+        # Break the total force into x and y components
+        force_on_1_x = total_force_on_1*cos(angle)*(1/dist_from_centers_x)
+        force_on_1_y = total_force_on_1*sin(angle)*(1/dist_from_centers_y)
+        print("force on 1 x: ", force_on_1_x)
+        print("force on 1 y: ", force_on_1_y)
+
+        return [ [force_on_1_x, force_on_1_y], [-force_on_1_x, -force_on_1_y] ]
+
+    return [[0,0],[0,0]]
+
+if __name__ == '__main__':
+
+    dict_1 = {"centerx":0, "centery":0, "radius":2}
+    dict_2 = {"centerx":1, "centery":-3, "radius":2}
+
+    print(calculate_collision_force_test(dict_1, dict_2))

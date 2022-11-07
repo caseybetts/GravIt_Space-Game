@@ -2,8 +2,6 @@
 
 import pygame
 from Calculations import (
-                    elastic_momentum,
-                    momentum,
                     find_force,
                     radar_coord_conversion
                     )
@@ -31,6 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.mass = mass
         self.velocity = [0,0]
         self.size = [x_size, y_size]
+        self.radius = (x_size + y_size)/4
         self.id = 0
         # Create pygame Surface
         self.surface = pygame.image.load("Graphics/GreenBlob.png")
@@ -53,12 +52,11 @@ class Player(pygame.sprite.Sprite):
         self.radar_point_color = 'Green'
         self.radar_point_size = 2
 
-        # Create gray collision flag
-        self.grey_collision_flag = False
-
         # Collision parameters
+        self.inelaticity = .9
         self.colliding_enemies = []
         self.colliding_grey = []
+        self.collision_force = [0,0]
 
     def thrust(self, direction):
 
@@ -123,10 +121,13 @@ class Player(pygame.sprite.Sprite):
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
+        force[0] += self.collision_force[0]
+        force[1] += self.collision_force[1]
 
         # Update acceleration
         acceleration_x = (force[0]+x_thrust)/(self.mass*framerate*framerate)
         acceleration_y = (force[1]+y_thrust)/(self.mass*framerate*framerate)
+
 
         # Update object's velocity
         self.velocity[0] += acceleration_x
@@ -151,5 +152,7 @@ class Player(pygame.sprite.Sprite):
                                 win_width,
                                 win_height)
 
+        # Reset the collision force to zero
+        self.collision_force = [0,0]
 
         self.display(screen, screen_col, screen_row, win_width, win_height)

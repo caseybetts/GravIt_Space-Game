@@ -4,8 +4,6 @@ import pygame
 import random
 
 from Calculations import (
-                    elastic_momentum,
-                    momentum,
                     find_force,
                     radar_coord_conversion
                     )
@@ -23,6 +21,7 @@ class Enemy(pygame.sprite.Sprite):
 
         # Mass, Position and Velocity parameters initialized
         self.mass = mass
+        self.radius = size/2
         self.velocity = velocity
         self.position = position
         self.id = id
@@ -60,10 +59,9 @@ class Enemy(pygame.sprite.Sprite):
         self.rock_quadrant_majority = [0, 0]
 
         # Collision parameters
+        self.inelaticity = .7
         self.colliding_enemies = []
-        self.enemy_collision_flag = False
-        self.player_collision_flag = False
-        self.grey_rock_collision_flag = False
+        self.collision_force = [0,0]
 
     def display(self, screen, screen_col, screen_row, win_width, win_height):
 
@@ -89,41 +87,6 @@ class Enemy(pygame.sprite.Sprite):
                             screen_row,
                             win_width,
                             win_height)
-
-    def collision(self, type, sprite):
-
-        # If the collision is with the player, update the rock velocities to bounce off
-        if type == "Player":
-            print("Collision with player. Flag=", self.player_collision_flag)
-            if not self.player_collision_flag:
-                print("Enemy bounced off player. Start Vs", self.velocity)
-                # Elastic collision
-                final_x_velocities = elastic_momentum(self.mass, self.velocity[0], sprite.mass, sprite.velocity[0])
-                final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
-                self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
-                self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                self.player_collision_flag = True
-                print("Final Vs", self.velocity)
-
-        # If it's a grey rock, update the enemy velocity to bounce off
-        elif type == "Grey":
-
-            if not self.grey_rock_collision_flag:
-                # Elastic collision
-                final_x_velocities = elastic_momentum(self.mass, self.velocity[0], sprite.mass, sprite.velocity[0])
-                final_y_velocities = elastic_momentum(self.mass, self.velocity[1], sprite.mass, sprite.velocity[1])
-                self.velocity[0] = BOUNCE_SLOW_PERCENT*final_x_velocities[0]
-                self.velocity[1] = BOUNCE_SLOW_PERCENT*final_y_velocities[0]
-                self.grey_rock_collision_flag = True
-
-        # If it's a brown rock, add the rock's mass to the enemy mass and kill the rock
-        if type == "Brown":
-            print( "your enemy just ate ",sprite.mass,"kg" )
-            self.mass += sprite.mass
-            self.velocity = [momentum(self.mass,self.velocity[0], sprite.mass, sprite.velocity[0])/2,
-                            momentum(self.mass,self.velocity[1], sprite.mass, sprite.velocity[1])/2]
-            self.collision_sound.play()
-            sprite.kill()
 
     def sense(self, all_sprites):
         """ Alows the enemy to move in the optimal direction"""
@@ -269,6 +232,10 @@ class Enemy(pygame.sprite.Sprite):
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
 
+        # Add in collision force
+        force[0] += self.collision_force[0] * self.inelaticity
+        force[1] += self.collision_force[1] * self.inelaticity
+
         # Update acceleration
         acceleration_x = (force[0]+self.thrust_force_x)/(self.mass*framerate*framerate)
         acceleration_y = (force[1]+self.thrust_force_y)/(self.mass*framerate*framerate)
@@ -296,5 +263,7 @@ class Enemy(pygame.sprite.Sprite):
                                 win_width,
                                 win_height)
 
+        # Reset collision force
+        self.collision_force = [0,0]
 
         self.display(screen, screen_col, screen_row, win_width, win_height)

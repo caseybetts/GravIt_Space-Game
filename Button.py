@@ -58,8 +58,6 @@ class Button():
 
         return action
 
-
-
 def real_button_action():
     print('real_button_action')
     rocks = setup.make_random_rocks(number_of_rocks)

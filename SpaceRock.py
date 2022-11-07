@@ -67,11 +67,11 @@ class SpaceRock(pygame.sprite.Sprite):
         self.surface = pygame.transform.scale(self.surface, size)
         self.surface.set_colorkey((0,0,0), RLEACCEL)
         self.rect = self.surface.get_rect( center = (position_x,position_y) )
+        self.radius = size[0]/2
 
         # Create radar point parameters
         self.radar_point_position = [0,0]
         self.radar_point_color = 'Red'
-
         self.radar_point_size = 2
 
     def change_size(self):
