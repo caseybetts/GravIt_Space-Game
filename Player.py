@@ -128,7 +128,6 @@ class Player(pygame.sprite.Sprite):
         acceleration_x = (force[0]+x_thrust)/(self.mass*framerate*framerate)
         acceleration_y = (force[1]+y_thrust)/(self.mass*framerate*framerate)
 
-
         # Update object's velocity
         self.velocity[0] += acceleration_x
         self.velocity[1] += acceleration_y

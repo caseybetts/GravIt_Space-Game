@@ -48,19 +48,19 @@ class SpaceRock(pygame.sprite.Sprite):
             if mass == 'SMALL_MASS':
                 image = "Graphics/meteorGrey_tiny2.png"
                 size = (10,10)
-                self.mass = SMALL_MASS
+                self.mass = SMALL_MASS*10
             elif mass == 'MED_MASS':
                 image = "Graphics/meteorGrey_med2.png"
                 size = (20,20)
-                self.mass = MED_MASS
+                self.mass = MED_MASS*10
             elif mass == 'BIG_MASS':
                 image = "Graphics/meteorGrey_big1.png"
                 size = (40,40)
-                self.mass = BIG_MASS
+                self.mass = BIG_MASS*10
             elif mass == 'HUGE_MASS':
                 image = "Graphics/meteorGrey_big1.png"
                 size = (45,45)
-                self.mass = HUGE_MASS
+                self.mass = HUGE_MASS*10
 
         # Create pygame Surface
         self.surface = pygame.image.load(image)
@@ -73,6 +73,9 @@ class SpaceRock(pygame.sprite.Sprite):
         self.radar_point_position = [0,0]
         self.radar_point_color = 'Red'
         self.radar_point_size = 2
+
+        # Collision parameters
+        self.collision_force = [0,0]
 
     def change_size(self):
         """ Change the size of the space rock based on it's mass"""
@@ -105,6 +108,8 @@ class SpaceRock(pygame.sprite.Sprite):
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
+        force[0] += self.collision_force[0]
+        force[1] += self.collision_force[1]
 
         # Give the rocks a little force to keep them from clustering at the edges
         if self.rect[0] < 0:
@@ -140,6 +145,9 @@ class SpaceRock(pygame.sprite.Sprite):
                                                             RADAR_REDUCTION,
                                                             radar_rect,
                                                             map_rect)
+
+        # Reset colliison force
+        self.collision_force = [0,0]
 
         # Blit the space rock to the screen
         self.display(screen, screen_col, screen_row, win_width, win_height)

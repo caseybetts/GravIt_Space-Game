@@ -213,7 +213,6 @@ class Space_Rock_Program():
             # Calculate force on each sprite
             forces = calculate_collision_force(self.blob, sprite)
             # Update respective collision_force values
-            inelaticity = self.blob.inelaticity * sprite.inelaticity
             self.blob.collision_force[0] += forces[0][0]
             self.blob.collision_force[1] += forces[0][1]
             sprite.collision_force[0] += forces[1][0]
@@ -235,28 +234,31 @@ class Space_Rock_Program():
             self.blob.collision_sound.play()
 
         ############# PLAYER AND GREY ROCKS #############
-        # # Get collided sprites
-        # player_grey_collisions = pygame.sprite.spritecollide(self.blob,self.grey_rocks, False)
-        #
-        # # Create a list of grey rocks that were not colliding with the player, but are now
-        # new_collisions = [x for x in player_grey_collisions if x not in self.blob.colliding_grey]
-        #
-        # # Create a list of grey rocks that were colliding with the player, but no longer are
-        # no_longer_colliding = [x for x in self.blob.colliding_grey if x not in player_grey_collisions]
-        #
-        # for sprite in new_collisions:
-        #     # Add sprite to colliding enemies list
-        #     self.blob.colliding_grey.append(sprite)
-        #     # Find both end velocities
-        #     final_x_velocities = calculate_collision_force(self.blob, sprite)
-        #     final_y_velocities = calculate_collision_force(self.blob, sprite)
-        #     # Update their velocities
-        #     # self.blob.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[0], BOUNCE_SLOW_PERCENT*final_y_velocities[0]]
-        #     # sprite.velocity = [BOUNCE_SLOW_PERCENT*final_x_velocities[1], BOUNCE_SLOW_PERCENT*final_y_velocities[1]]
-        #
-        # for sprite in no_longer_colliding:
-        #     self.blob.colliding_grey.remove(sprite)
-        #
+        # Get collided sprites
+        player_grey_collisions = pygame.sprite.spritecollide(self.blob,self.grey_rocks, False)
+
+        # Create a list of grey rocks that were not colliding with the player, but are now
+        new_collisions = [x for x in player_grey_collisions if x not in self.blob.colliding_grey]
+
+        # Create a list of grey rocks that were colliding with the player, but no longer are
+        no_longer_colliding = [x for x in self.blob.colliding_grey if x not in player_grey_collisions]
+
+        for sprite in new_collisions:
+            # Add sprite to colliding enemies list
+            self.blob.colliding_grey.append(sprite)
+
+        for sprite in self.blob.colliding_grey:
+            # Calculate force on each sprite
+            forces = calculate_collision_force(self.blob, sprite)
+            # Update respective collision_force values
+            self.blob.collision_force[0] += forces[0][0]
+            self.blob.collision_force[1] += forces[0][1]
+            sprite.collision_force[0] += forces[1][0]
+            sprite.collision_force[1] += forces[1][1]
+
+        for sprite in no_longer_colliding:
+            self.blob.colliding_grey.remove(sprite)
+
         # ############# ENEMIES AND ENEMIES #############
         # # Get collided sprites
         # enemy_collisions = pygame.sprite.groupcollide(self.enemies, self.enemies, False, False)
