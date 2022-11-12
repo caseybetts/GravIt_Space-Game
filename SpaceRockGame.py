@@ -260,25 +260,31 @@ class Space_Rock_Program():
             self.blob.colliding_grey.remove(sprite)
 
         # ############# ENEMIES AND ENEMIES #############
-        # # Get collided sprites
-        # enemy_collisions = pygame.sprite.groupcollide(self.enemies, self.enemies, False, False)
-        #
-        # for enemy in enemy_collisions:
-        #     # Create a list of enemies that were not colliding with this enemy before, but are now
-        #     new_collisions = [x for x in enemy_collisions[enemy] if x not in enemy.colliding_enemies]
-        #
-        #     # Create a list of enemies that were colliding with this enemy, but are not any more
-        #     no_longer_colliding = [x for x in enemy.colliding_enemies if x not in enemy_collisions[enemy]]
-        #
-        #     for sprite in new_collisions:
-        #         # Add sprite to colliding enemies list
-        #         enemy.colliding_enemies.append(sprite)
-        #         # Find both end velocities
-        #         final_x_velocities = calculate_collision_force(enemy, sprite)
-        #         final_y_velocities = calculate_collision_force(enemy, sprite)
-        #
-        #     for sprite in no_longer_colliding:
-        #         enemy.colliding_enemies.remove(sprite)
+        # Get collided sprites
+        enemy_collisions = pygame.sprite.groupcollide(self.enemies, self.enemies, False, False)
+
+        for enemy in enemy_collisions:
+            # Create a list of enemies that were not colliding with this enemy before, but are now
+            new_collisions = [x for x in enemy_collisions[enemy] if x not in enemy.colliding_enemies]
+
+            # Create a list of enemies that were colliding with this enemy, but are not any more
+            no_longer_colliding = [x for x in enemy.colliding_enemies if x not in enemy_collisions[enemy]]
+
+            for sprite in new_collisions:
+                # Add sprite to colliding enemies list
+                enemy.colliding_enemies.append(sprite)
+
+            for sprite in enemy.colliding_enemies:
+                # Calculate force on each sprite
+                forces = calculate_collision_force(enemy, sprite)
+                # Update respective collision_force values
+                enemy.collision_force[0] += forces[0][0]/2
+                enemy.collision_force[1] += forces[0][1]/2
+                sprite.collision_force[0] += forces[1][0]/2
+                sprite.collision_force[1] += forces[1][1]/2
+
+        for sprite in no_longer_colliding:
+            enemy.colliding_enemies.remove(sprite)
 
 
         ############# BROWN ROCKS AND BROWN ROCKS #############
@@ -286,27 +292,30 @@ class Space_Rock_Program():
         brown_collisions = pygame.sprite.groupcollide(self.brown_rocks, self.brown_rocks, False, False)
 
         for rock in brown_collisions:
+            # For every brown rock that is currently in the colliding list (this is every rock since it counts collisions with itself, but we handle that next)
 
             if len(brown_collisions[rock]) > 1:
+                # If it is colliding with a rock in addition to itself
 
                 for sprite in brown_collisions[rock]:
+                    # For each rock in the collision list for this rock (Again this will include itself)
 
-                    if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
+                    if rock.id != sprite.id:
+                        # If the collision rock is not itself
 
-                        if sprite.mass > rock.mass:
-                            sprite.mass += rock.mass
-                            sprite.change_size()
-                            rock.kill()
-                        else:
+                        if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
+                            # Determine if they are moving together
+
                             rock.mass += sprite.mass
                             rock.change_size()
                             sprite.kill()
-                        self.remaining_rocks -= 1
-                    else:
-                        sprite.velocity[0] *= collision_slow_percent
-                        sprite.velocity[1] *= collision_slow_percent
-                        rock.velocity[0] *= collision_slow_percent
-                        rock.velocity[1] *= collision_slow_percent
+                            self.remaining_rocks -= 1
+
+                        else:
+                            sprite.velocity[0] *= collision_slow_percent
+                            sprite.velocity[1] *= collision_slow_percent
+                            rock.velocity[0] *= collision_slow_percent
+                            rock.velocity[1] *= collision_slow_percent
 
         ############# GREY ROCKS AND GREY ROCKS #############
         # Get collided sprites
@@ -318,22 +327,24 @@ class Space_Rock_Program():
 
                 for sprite in grey_collisions[rock]:
 
-                    if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
+                    if rock.id != sprite.id:
 
-                        if sprite.mass > rock.mass:
-                            sprite.mass += rock.mass
-                            sprite.change_size()
-                            rock.kill()
+                        if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
+
+                            if sprite.mass > rock.mass:
+                                sprite.mass += rock.mass
+                                sprite.change_size()
+                                rock.kill()
+                            else:
+                                rock.mass += sprite.mass
+                                rock.change_size()
+                                sprite.kill()
+                            self.remaining_rocks -= 1
                         else:
-                            rock.mass += sprite.mass
-                            rock.change_size()
-                            sprite.kill()
-                        self.remaining_rocks -= 1
-                    else:
-                        sprite.velocity[0] *= collision_slow_percent
-                        sprite.velocity[1] *= collision_slow_percent
-                        rock.velocity[0] *= collision_slow_percent
-                        rock.velocity[1] *= collision_slow_percent
+                            sprite.velocity[0] *= collision_slow_percent
+                            sprite.velocity[1] *= collision_slow_percent
+                            rock.velocity[0] *= collision_slow_percent
+                            rock.velocity[1] *= collision_slow_percent
 
 
         ############# BROWN ROCKS AND GREY ROCKS #############

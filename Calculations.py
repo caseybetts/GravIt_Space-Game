@@ -116,7 +116,6 @@ def calculate_collision_force(sprite_1, sprite_2):
     norm = sqrt((dist_from_centers_x**2) + (dist_from_centers_y**2))
 
     separation = norm - (sprite_1.radius + sprite_2.radius)
-    print("Separation:", separation)
 
     # If the distance is less than the combined radiuses, continue
     if separation < 0:
@@ -126,7 +125,6 @@ def calculate_collision_force(sprite_1, sprite_2):
 
         # Put a check on how high the force can be
         if total_force_on_1 > 80000*sprite_1.mass:
-            print("max force reached")
             total_force_on_1 = 80000*sprite_1.mass
 
         # Calculate the angle of the force
@@ -136,7 +134,6 @@ def calculate_collision_force(sprite_1, sprite_2):
         force_on_1_x = total_force_on_1*cos(angle)*(1/dist_from_centers_x)
         force_on_1_y = total_force_on_1*sin(angle)*(1/dist_from_centers_y)
 
-        print("collision force:", [ [force_on_1_x, force_on_1_y], [-force_on_1_x, -force_on_1_y] ])
         return [ [force_on_1_x, force_on_1_y], [-force_on_1_x, -force_on_1_y] ]
 
     return [[0,0],[0,0]]
