@@ -61,6 +61,7 @@ class Enemy(pygame.sprite.Sprite):
         # Collision parameters
         self.inelaticity = .7
         self.colliding_enemies = []
+        self.colliding_grey = []
         self.collision_force = [0,0]
 
     def display(self, screen, screen_col, screen_row, win_width, win_height):

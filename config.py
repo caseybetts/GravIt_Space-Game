@@ -4,7 +4,7 @@
 framerate = 35
 
 # Sound
-music_on = True
+music_on = False
 background_music_location = "audio/background_music.wav"
 button_sound_location = "audio/button-gong-sabi.wav"
 thrust_sound_location = "audio/thrust.flac"

@@ -283,9 +283,35 @@ class Space_Rock_Program():
                 sprite.collision_force[0] += forces[1][0]/2
                 sprite.collision_force[1] += forces[1][1]/2
 
-        for sprite in no_longer_colliding:
-            enemy.colliding_enemies.remove(sprite)
+                for sprite in no_longer_colliding:
+                    enemy.colliding_enemies.remove(sprite)
 
+        ############# ENEMIES AND GREY ROCKS #############
+        # Get collided sprites
+        enemy_grey_collisions = pygame.sprite.groupcollide(self.enemies, self.grey_rocks, False, False)
+
+        for enemy in enemy_grey_collisions:
+            # Create a list of grey rocks that were not colliding with this enemy before, but are now
+            new_collisions = [x for x in enemy_grey_collisions[enemy] if x not in enemy.colliding_grey]
+
+            # Create a list of grey rocks that were colliding with this enemy, but are not any more
+            no_longer_colliding = [x for x in enemy.colliding_grey if x not in enemy_grey_collisions[enemy]]
+
+            for sprite in new_collisions:
+                # Add sprite to colliding enemies list
+                enemy.colliding_grey.append(sprite)
+
+            for sprite in enemy.colliding_grey:
+                # Calculate force on each sprite
+                forces = calculate_collision_force(enemy, sprite)
+                # Update respective collision_force values
+                enemy.collision_force[0] += forces[0][0]/2
+                enemy.collision_force[1] += forces[0][1]/2
+                sprite.collision_force[0] += forces[1][0]/2
+                sprite.collision_force[1] += forces[1][1]/2
+
+            for sprite in no_longer_colliding:
+                enemy.colliding_grey.remove(sprite)
 
         ############# BROWN ROCKS AND BROWN ROCKS #############
         # Get collided sprites
