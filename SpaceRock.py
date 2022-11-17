@@ -84,13 +84,13 @@ class SpaceRock(pygame.sprite.Sprite):
             self.surface = pygame.transform.scale(self.surface, (80,80))
             self.surface.set_colorkey((0,0,0), RLEACCEL)
             self.rect = self.surface.get_rect( center = (self.rect.x, self.rect.y) )
-            self.radius = 3*self.rect.width/4
+            self.radius = self.rect.width * .7
 
         if self.mass > 6*BIG_MASS:
-            self.surface = pygame.transform.scale(self.surface, (120,120))
+            self.surface = pygame.transform.scale(self.surface, (110,110))
             self.surface.set_colorkey((0,0,0), RLEACCEL)
             self.rect = self.surface.get_rect( center = (self.rect.x, self.rect.y) )
-            self.radius = 3*self.rect.width/4
+            self.radius = self.rect.width * .6
 
 
     def display(self, screen, screen_col, screen_row, win_width, win_height):

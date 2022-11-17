@@ -121,7 +121,7 @@ def calculate_collision_force(sprite_1, sprite_2):
     if separation < 0:
 
         # Calculate force on sprite 1
-        total_force_on_1 = fabs(k * sprite_2.mass * (separation**4))
+        total_force_on_1 = fabs(k * sprite_2.mass * (separation**5))
 
         # Put a check on how high the force can be
         if total_force_on_1 > 80000*sprite_1.mass:
