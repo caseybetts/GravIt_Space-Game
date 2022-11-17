@@ -173,7 +173,6 @@ class Space_Rock_Program():
         print("Level parameters set ")
 
     def release_space_rocks(self):
-        print("releasing rocks")
 
         rock_id = 0
         # Find the highest rock id
@@ -184,6 +183,12 @@ class Space_Rock_Program():
         if self.game_level == 1:
             rock = SpaceRock((rock_id + 1), "BIG_MASS", "Brown", 0, -4*self.win_height, 0, 2)
             self.brown_rocks.add(rock)
+            self.all_rocks.add(rock)
+            self.all_sprites.add(rock)
+
+        elif self.game_level == 2:
+            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Grey", 0, -4*self.win_height, 0, 2)
+            self.grey_rocks.add(rock)
             self.all_rocks.add(rock)
             self.all_sprites.add(rock)
 
@@ -284,7 +289,7 @@ class Space_Rock_Program():
                 sprite.collision_force[0] += forces[1][0]/2
                 sprite.collision_force[1] += forces[1][1]/2
 
-                for sprite in no_longer_colliding:
+            for sprite in no_longer_colliding:
                     enemy.colliding_enemies.remove(sprite)
 
         ############# ENEMIES AND BROWN ROCKS #############
