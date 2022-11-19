@@ -134,6 +134,21 @@ def calculate_collision_force(sprite_1, sprite_2):
         force_on_1_x = total_force_on_1*cos(angle)*(1/dist_from_centers_x)
         force_on_1_y = total_force_on_1*sin(angle)*(1/dist_from_centers_y)
 
+        # Check if the sprites are moving away from eachother
+        velocity_delta_x = sprite_1.velocity[0] - sprite_2.velocity[0]
+        velocity_delta_y = sprite_1.velocity[1] - sprite_2.velocity[1]
+
+        # Sprite_2 is to the right of sprite_1 and they are moving away from eachother
+        if dist_from_centers_x < 0 and velocity_delta_x < 0:
+            force_on_1_x *= .7
+        if dist_from_centers_x > 0 and velocity_delta_x > 0:
+            force_on_1_x *= .7
+
+        if dist_from_centers_y < 0 and velocity_delta_y < 0:
+            force_on_1_y *= .7
+        if dist_from_centers_y > 0 and velocity_delta_y > 0:
+            force_on_1_y *= .7
+
         return [ [force_on_1_x, force_on_1_y], [-force_on_1_x, -force_on_1_y] ]
 
     return [[0,0],[0,0]]

@@ -41,6 +41,7 @@ class Space_Rock_Program():
         # Fonts
         self.font = pygame.font.Font(pygame.font.get_default_font(), 40)
         self.level_font = pygame.font.Font(pygame.font.get_default_font(), 150)
+        self.next_level_font = pygame.font.Font(pygame.font.get_default_font(), 40)
         self.win_font = pygame.font.Font(pygame.font.get_default_font(), 150)
         self.inst_font = pygame.font.Font(pygame.font.get_default_font(), 30)
 
@@ -101,15 +102,16 @@ class Space_Rock_Program():
         self.level_timer = pygame.USEREVENT + 1
         pygame.time.set_timer(self.level_timer, 5000)
 
-        # Variables
-        self.key_down_flag = False
-        self.number_of_rocks = 0
+        # Game level variables
+        self.level_won = False
         self.game_level = 0
         self.win_mass = 0
         self.level_text_count = 0
+
+        # Variables
+        self.key_down_flag = False
+        self.number_of_rocks = 0
         self.space_rock_set = []
-        self.grey_collision_flag = 1
-        self.enemy_grey_collision_flag = 1
         self.colliding_enemies = 1
 
     def update_screen_position(self, player_rect):
@@ -149,6 +151,10 @@ class Space_Rock_Program():
 
     def set_level_parameters(self):
 
+        # Reset the win flag
+        self.level_won = False
+
+        # Set parameters for each level
         if self.game_level == 1:
             self.number_of_rocks = 90
             self.win_mass = 6e15
@@ -157,13 +163,13 @@ class Space_Rock_Program():
             self.enemy_specs = LEVEL_1_ENEMY_SPECS
         elif self.game_level == 2:
             self.number_of_rocks = 50
-            self.win_mass = 8e15
+            self.win_mass = 10e15
             self.brown_space_rock_set = LEVEL_2_BROWN_SET
             self.grey_space_rock_set = LEVEL_2_GREY_SET
             self.enemy_specs = LEVEL_2_ENEMY_SPECS
         elif self.game_level == 3:
             self.number_of_rocks = 20
-            self.win_mass = 10e15
+            self.win_mass = 14e15
             self.brown_space_rock_set = LEVEL_3_BROWN_SET
             self.grey_space_rock_set = LEVEL_3_GREY_SET
             self.enemy_specs = LEVEL_3_ENEMY_SPECS
@@ -181,13 +187,13 @@ class Space_Rock_Program():
                 rock_id = rock.id
 
         if self.game_level == 1:
-            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Brown", 0, -4*self.win_height, 0, 2)
+            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Brown", .5*self.win_width, -4*self.win_height, 0, 2)
             self.brown_rocks.add(rock)
             self.all_rocks.add(rock)
             self.all_sprites.add(rock)
 
         elif self.game_level == 2:
-            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Grey", 0, -4*self.win_height, 0, 2)
+            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Grey", .5*self.win_width, -4*self.win_height, 0, 2)
             self.grey_rocks.add(rock)
             self.all_rocks.add(rock)
             self.all_sprites.add(rock)
@@ -457,20 +463,6 @@ class Space_Rock_Program():
                     rock.velocity[0] *= collision_slow_percent
                     rock.velocity[1] *= collision_slow_percent
 
-        ############# GREY ROCKS AND BROWN ROCKS #############
-        # Get collided sprites
-        grey_collisions = pygame.sprite.groupcollide(self.grey_rocks, self.brown_rocks, False, False)
-
-        for rock in grey_collisions:
-
-            if len(grey_collisions[rock]) > 1:
-
-                for sprite in grey_collisions[rock]:
-                    sprite.velocity[0] *= collision_slow_percent
-                    sprite.velocity[1] *= collision_slow_percent
-                    rock.velocity[0] *= collision_slow_percent
-                    rock.velocity[1] *= collision_slow_percent
-
     def update_sprite_positions(self):
         """ Update the posistions of all the sprites """
 
@@ -563,6 +555,18 @@ class Space_Rock_Program():
         self.screen.blit(self.increase_mass_button.image, self.increase_mass_button.rect)
         self.screen.blit(self.decrease_mass_button.image, self.decrease_mass_button.rect)
 
+        # If the winning mass is reached display next level instruction
+        if self.level_won == True:
+            self.screen.blit(self.next_level_text,((self.win_width-self.next_level_text.get_width())/2, (self.win_height-self.next_level_text.get_height())/2))
+
+    def create_level_info_text(self):
+
+        # Create text object for displaying the level
+        self.level_text = self.level_font.render('Level {}'.format(self.game_level), False, (84,84,84))
+
+        # Create text object for instructions on moving to next level
+        self.next_level_text = self.next_level_font.render("""Achieved Critical Mass! (Press Space Bar to Advance)""", False, (84,84,84))
+
     def game_loop(self, level):
         """ Runs the loop for the game"""
         print("Running Game Loop")
@@ -570,8 +574,8 @@ class Space_Rock_Program():
         # Set the parameters for the current game level
         self.set_level_parameters()
 
-        # Create text object for displaying the level
-        level_text = self.level_font.render('Level {}'.format(self.game_level), False, (84,84,84))
+        # Create all the text objects needed for level info
+        self.create_level_info_text()
 
         # Create the enemy
         self.enemies = self.setup.enemy_generator(self.enemy_specs)
@@ -615,9 +619,9 @@ class Space_Rock_Program():
                     elif event.key == K_d:
                         self.game_level = 0
                     elif event.key == K_m:
-                        self.blob.mass *= .9
-                    elif event.key == K_LSHIFT and event.key == K_g:
-                        print("Next Level")
+                        self.blob.mass *= 1.1
+                    elif event.key == K_SPACE and self.level_won == True:
+                        self.game_level += 1
                     else:
                         # Change the key down flag to True
                         self.key_down_flag = True
@@ -652,7 +656,7 @@ class Space_Rock_Program():
 
             # Display the current level at start of level
             if self.level_text_count > 0:
-                self.screen.blit(level_text,((self.win_width-level_text.get_width())/2, (self.win_height-level_text.get_height())/2))
+                self.screen.blit(self.level_text,((self.win_width-self.level_text.get_width())/2, (self.win_height-self.level_text.get_height())/2))
                 self.level_text_count -= 1
 
             # Check up/down buttons for mouse click
@@ -667,7 +671,7 @@ class Space_Rock_Program():
 
             # Check if your mass is great enough to win the level
             if self.blob.mass > self.win_mass:
-                self.game_level += 1
+                self.level_won = True
 
             # Finish the loop with the framrate time and pygame flip
             self.clock.tick(framerate)
@@ -698,6 +702,9 @@ class Space_Rock_Program():
                         self.game_level = -1
                     elif event.key == K_w:
                         self.game_level = 4
+                    elif event.key == pygame.K_RETURN:
+                        self.real_button.button_sound.play()
+                        self.game_level = 1
                 elif event.type == pygame.QUIT:
                     self.game_level = -1
             # Blit the background
