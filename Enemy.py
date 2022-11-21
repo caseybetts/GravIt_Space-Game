@@ -3,55 +3,30 @@
 import pygame
 import random
 
+from Alien import *
 from Calculations import (
                     find_force,
                     radar_coord_conversion
                     )
 from config import *
-from math import fabs
+from math import fabs, floor
 from pygame.locals import RLEACCEL
 from ThrustSprite import ThrustSprite
 
-class Enemy(pygame.sprite.Sprite):
+class Enemy(Alien):
     """This is the enemy sprite"""
 
     # Must pass in a mass (int), size (int), postion (2 element list), velocity (2 element list)
     def __init__(self, id, mass, size, position, velocity):
-        super(Enemy,self).__init__()
+        super(Enemy,self).__init__(id, mass, size, position, velocity, ENEMY_IMAGE_LOCATION, "Yellow")
 
-        # Mass, Position and Velocity parameters initialized
-        self.mass = mass
-        self.radius = size/2
-        self.velocity = velocity
-        self.position = position
-        self.id = id
-
-        # Create pygame Surface
-        self.surface = pygame.image.load(enemy_image_location)
-        self.surface = pygame.transform.scale(self.surface, [size,size])
-        self.surface.set_colorkey((0,0,0), RLEACCEL)
-        self.rect = self.surface.get_rect( center = position )
-
-        # Thrust parameters
-        self.thrust_sound = pygame.mixer.Sound(thrust_sound_location)
-        self.thrust_sound.set_volume(.5)
-        self.thrust_group = pygame.sprite.Group()
-        self.percent_ejection = ENEMY_PERCENT_EJECTION
-        self.thrust_direction = ['left', 'up']
-        self.thrust_mass_multiplyer = self.percent_ejection*thrust_acc
+        self.percent_ejection = ENEMY_PERCENT_EJECTION ##
+        self.thrust_direction = ['left', 'up'] ##
+        self.thrust_mass_multiplyer = self.percent_ejection*thrust_acc ##
 
         # Only allow the enemy to thrust at a certain frequency
         self.thrust_count = pygame.USEREVENT + 2
         pygame.time.set_timer(self.thrust_count, 1000)
-
-        # Collision Sound
-        self.collision_sound = pygame.mixer.Sound(gulp_sound_location)
-        self.collision_sound.set_volume(.15)
-
-        # Create radar point parameters
-        self.radar_point_position = [0,0]
-        self.radar_point_color = 'Yellow'
-        self.radar_point_size = 2
 
         # Sensor parameters
         self.player_in_proximity_flag = False
@@ -59,35 +34,9 @@ class Enemy(pygame.sprite.Sprite):
         self.rock_quadrant_majority = [0, 0]
 
         # Collision parameters
-        self.inelaticity = .7
         self.colliding_enemies = []
         self.colliding_grey = []
         self.collision_force = [0,0]
-
-    def display(self, screen, screen_col, screen_row, win_width, win_height):
-
-        # Blit the enemy to the screen
-        screen.blit(self.surface,[
-                        self.rect.left + (-screen_col*win_width),
-                        self.rect.top + (-screen_row*win_height)])
-
-        # Blit the radar point to the screen
-        pygame.draw.rect(
-                        screen,
-                        self.radar_point_color,
-                        (self.radar_point_position[0],
-                          self.radar_point_position[1],
-                          self.radar_point_size,
-                          self.radar_point_size))
-
-        # Blit the thrust group to the screen
-        for sprite in self.thrust_group:
-            sprite.display(
-                            screen,
-                            screen_col,
-                            screen_row,
-                            win_width,
-                            win_height)
 
     def sense(self, all_sprites):
         """ Alows the enemy to move in the optimal direction"""
@@ -207,18 +156,16 @@ class Enemy(pygame.sprite.Sprite):
 
                 # Update the amount of force from thrust
                 if direction == 'left':
-                    self.thrust_force_x = -self.mass*self.thrust_mass_multiplyer
+                    self.thrust_force[0] = -self.mass*self.thrust_mass_multiplyer
                 elif direction == 'right':
-                    self.thrust_force_x = self.mass*self.thrust_mass_multiplyer
+                    self.thrust_force[0] = self.mass*self.thrust_mass_multiplyer
                 elif direction == 'up':
-                    self.thrust_force_y = -self.mass*self.thrust_mass_multiplyer
+                    self.thrust_force[1] = -self.mass*self.thrust_mass_multiplyer
                 elif direction == 'down':
-                    self.thrust_force_y = self.mass*self.thrust_mass_multiplyer
+                    self.thrust_force[1] = self.mass*self.thrust_mass_multiplyer
 
-    def update(self, all_sprites, key_down_flag, pygame_events, screen, screen_col, screen_row, win_width, win_height, map_rect, radar_rect):
-        """ Move the sprite based on AI logic"""
-        self.thrust_force_x = 0
-        self.thrust_force_y = 0
+    def get_input(self, all_sprites, key_down_flag, pressed_keys, pygame_events):
+        """Retrieves input from the system"""
 
         for event in pygame_events:
             # Only give thrust if an event is created for it
@@ -229,42 +176,3 @@ class Enemy(pygame.sprite.Sprite):
                 self.sense(all_sprites)
                 self.think()
                 self.thrust()
-
-        # Calculate force on object
-        force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
-
-        # Add in collision force
-        force[0] += self.collision_force[0] * self.inelaticity
-        force[1] += self.collision_force[1] * self.inelaticity
-
-        # Update acceleration
-        acceleration_x = (force[0]+self.thrust_force_x)/(self.mass*framerate*framerate)
-        acceleration_y = (force[1]+self.thrust_force_y)/(self.mass*framerate*framerate)
-
-        # Update object's velocity
-        self.velocity[0] += acceleration_x
-        self.velocity[1] += acceleration_y
-
-        # Find the displacement in position
-        self.rect.move_ip(self.velocity[0],self.velocity[1])
-
-        # Update the radar point
-        self.radar_point_position = radar_coord_conversion(
-                                                            self.rect.left,
-                                                            self.rect.top,
-                                                            RADAR_REDUCTION,
-                                                            radar_rect,
-                                                            map_rect)
-
-        # Update thrust group
-        self.thrust_group.update(
-                                screen,
-                                screen_col,
-                                screen_row,
-                                win_width,
-                                win_height)
-
-        # Reset collision force
-        self.collision_force = [0,0]
-
-        self.display(screen, screen_col, screen_row, win_width, win_height)

@@ -61,15 +61,14 @@ class Space_Rock_Program():
         # Create the player sprite
         self.blob = Player(
                     PLAYER_START_MASS,
-                    player_start_size_x,
-                    player_start_size_y
+                    PLAYER_STARAT_SIZE
                     )
 
         # Calculate map boundaries in pixels based on number of screens map extends to
-        self.map_left_boundary = -(int(map_size_width/2))*self.win_width
-        self.map_right_boundary = ((int(map_size_width/2))+1)*self.win_width
-        self.map_top_boundary =-(int(map_size_height/2))*self.win_height
-        self.map_bottom_boundary = ((int(map_size_height/2))+1)*self.win_height
+        self.map_left_boundary = -(int(MAP_SIZE_WIDTH/2))*self.win_width
+        self.map_right_boundary = ((int(MAP_SIZE_WIDTH/2))+1)*self.win_width
+        self.map_top_boundary =-(int(MAP_SIZE_HEIGHT/2))*self.win_height
+        self.map_bottom_boundary = ((int(MAP_SIZE_HEIGHT/2))+1)*self.win_height
         map_width = self.map_right_boundary - self.map_left_boundary # In pixels
         map_height = self.map_bottom_boundary - self.map_top_boundary # In pixels
 
@@ -86,10 +85,6 @@ class Space_Rock_Program():
         self.radar_screen.fill((30,30,30))
         self.radar_screen.set_alpha(128)
         self.radar_rect = self.radar_screen.get_rect(left = radar_left, top = radar_top)
-
-        # Create variables for screen position
-        self.screen_col = 0
-        self.screen_row = 0
 
         # Create background image surface
         self.bg_image = pygame.image.load(background_image_location)
@@ -113,41 +108,6 @@ class Space_Rock_Program():
         self.number_of_rocks = 0
         self.space_rock_set = []
         self.colliding_enemies = 1
-
-    def update_screen_position(self, player_rect):
-        """Given the player's position, this determines the column and row of the screen on the map."""
-
-        # Determine screen column
-        if player_rect.left < -2*self.win_width:
-            self.screen_col = -3
-        elif player_rect.left < -self.win_width:
-            self.screen_col = -2
-        elif player_rect.left < 0:
-            self.screen_col = -1
-        elif player_rect.left < self.win_width:
-            self.screen_col = 0
-        elif player_rect.left < 2*self.win_width:
-            self.screen_col = 1
-        elif player_rect.left < 3*self.win_width:
-            self.screen_col = 2
-        else:
-            self.screen_col = 3
-
-        # Determine screen column
-        if player_rect.top < -2*self.win_height:
-            self.screen_row = -3
-        elif player_rect.top < -self.win_height:
-            self.screen_row = -2
-        elif player_rect.top < 0:
-            self.screen_row = -1
-        elif player_rect.top < self.win_height:
-            self.screen_row = 0
-        elif player_rect.top < 2*self.win_height:
-            self.screen_row = 1
-        elif player_rect.top < 3*self.win_height:
-            self.screen_row = 2
-        else:
-            self.screen_row = 3
 
     def set_level_parameters(self):
 
@@ -242,7 +202,7 @@ class Space_Rock_Program():
             self.blob.mass += sprite.mass
             self.blob.velocity = [momentum(self.blob.mass,self.blob.velocity[0], sprite.mass, sprite.velocity[0])/2,
                             momentum(self.blob.mass,self.blob.velocity[1], sprite.mass, sprite.velocity[1])/2]
-            self.blob.collision_sound.play()
+            self.blob.gulp_sound.play()
 
         ############# PLAYER AND GREY ROCKS #############
         # Get collided sprites
@@ -474,9 +434,10 @@ class Space_Rock_Program():
                         self.all_sprites,
                         self.key_down_flag,
                         pressed_keys,
+                        self.events,
                         self.screen,
-                        self.screen_col,
-                        self.screen_row,
+                        self.blob.screen_row,
+                        self.blob.screen_col,
                         self.win_width,
                         self.win_height,
                         self.map_rect,
@@ -487,10 +448,11 @@ class Space_Rock_Program():
         self.enemies.update(
                         self.all_sprites,
                         self.key_down_flag,
+                        pressed_keys,
                         self.events,
                         self.screen,
-                        self.screen_col,
-                        self.screen_row,
+                        self.blob.screen_row,
+                        self.blob.screen_col,
                         self.win_width,
                         self.win_height,
                         self.map_rect,
@@ -503,8 +465,8 @@ class Space_Rock_Program():
                             self.all_sprites,
                             self.map_rect,
                             self.screen,
-                            self.screen_col,
-                            self.screen_row,
+                            self.blob.screen_col,
+                            self.blob.screen_row,
                             self.win_width,
                             self.win_height,
                             self.radar_rect)
@@ -517,8 +479,8 @@ class Space_Rock_Program():
 
         # Calculate the display position of the shadow of the active screen on the radar
         screen_position = radar_coord_conversion(
-                                    self.screen_col*self.win_width,
-                                    self.screen_row*self.win_height,
+                                    self.blob.screen_col*self.win_width,
+                                    self.blob.screen_row*self.win_height,
                                     RADAR_REDUCTION,
                                     self.radar_rect,
                                     self.map_rect
@@ -641,9 +603,6 @@ class Space_Rock_Program():
 
             # collision_handler
             self.collision_handler()
-
-            # Update the coloumn and row of the screen on the map
-            self.update_screen_position(self.blob.rect)
 
             # Blit the background
             self.screen.blit(self.bg_image,(0,0))

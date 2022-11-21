@@ -10,6 +10,7 @@ from Calculations import (
                     radar_coord_conversion
                     )
 from config import *
+from math import floor
 from pygame.locals import RLEACCEL
 
 
@@ -77,6 +78,10 @@ class SpaceRock(pygame.sprite.Sprite):
         # Collision parameters
         self.collision_force = [0,0]
 
+        # Screen parameters
+        self.screen_row = 0
+        self.screen_col = 0
+
     def change_size(self):
         """ Change the size of the space rock based on it's mass"""
 
@@ -101,6 +106,7 @@ class SpaceRock(pygame.sprite.Sprite):
                         self.rect.top + (-screen_row*win_height)])
 
         # Blit the radar point to the screen
+        # if screen_col
         pygame.draw.rect(
                         screen,
                         self.radar_point_color,
@@ -110,6 +116,10 @@ class SpaceRock(pygame.sprite.Sprite):
                           self.radar_point_size))
 
     def update(self, all_sprites, map_rect, screen, screen_col, screen_row, win_width, win_height, radar_rect):
+
+        # Update screen row and column
+        self.screen_col = floor(self.rect.centerx / win_width)
+        self.screen_row = floor(self.rect.centery / win_height)
 
         # Calculate force on object
         force = find_force(all_sprites, self.rect[0], self.rect[1], self.mass, self.id)
@@ -130,7 +140,8 @@ class SpaceRock(pygame.sprite.Sprite):
         # Update acceleration
         acceleration_x = force[0]/(self.mass*framerate*framerate)
         acceleration_y = force[1]/(self.mass*framerate*framerate)
-        # Update object's velocity
+
+        # Update velocity
         self.velocity[0] += acceleration_x
         self.velocity[1] += acceleration_y
 
@@ -138,9 +149,9 @@ class SpaceRock(pygame.sprite.Sprite):
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
         # Remove space rock if it gets too far away
-        if self.rect.left < (map_rect.left - win_width/2) or self.rect.right > (map_rect.right + win_width/2):
+        if self.screen_col < -floor(MAP_SIZE_WIDTH/2)-1 or self.screen_col > floor(MAP_SIZE_WIDTH/2)+1:
             self.kill()
-        if self.rect.top < (map_rect.top - win_height*2) or self.rect.bottom > (map_rect.bottom + win_height/2):
+        if self.screen_row < -floor(MAP_SIZE_HEIGHT/2)-1 or self.screen_row > floor(MAP_SIZE_HEIGHT/2)+1:
             self.kill()
 
         # Update the radar point

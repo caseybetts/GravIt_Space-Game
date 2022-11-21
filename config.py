@@ -7,20 +7,21 @@ framerate = 35
 music_on = False
 background_music_location = "audio/background_music.wav"
 button_sound_location = "audio/button-gong-sabi.wav"
-thrust_sound_location = "audio/thrust.flac"
-gulp_sound_location = "audio/gulp.mp3"
+THRUST_SOUND_LOCATION = "audio/thrust.flac"
+GULP_SOUND_LOCATION = "audio/gulp.mp3"
 
 # Graphics
+PLAYER_IMAGE_LOCATOIN = 'Graphics/GreenBlob.png'
 button_image_location = 'Graphics/Blue_button2.png'
 background_image_location = "Graphics/bg_stars5.jpg"
 up_button_image_location = "Graphics/Up_Button.png"
 down_button_image_location = "Graphics/Down_Button.png"
-enemy_image_location = "Graphics/YellowBlob.png"
+ENEMY_IMAGE_LOCATION = "Graphics/YellowBlob.png"
 
 # Player parameters
 PLAYER_START_MASS = 4e15 #kg
-player_start_size_x = 25
-player_start_size_y = 25
+PLAYER_STARAT_SIZE = 25
+
 
 # Enemy parameters
 ENEMY_MASS = 1e15
@@ -37,6 +38,9 @@ collision_slow_percent = .99
 grav_threshold = 20
 BOUNCE_SLOW_PERCENT = .5
 
+# Set how many screens the map consists of
+MAP_SIZE_WIDTH = 7
+MAP_SIZE_HEIGHT = 7
 
 # Space Rock parameters
 helper_force =  0
@@ -46,14 +50,10 @@ BIG_MASS =      1e15
 HUGE_MASS =     1e16
 MASSES = (SMALL_MASS, MED_MASS, BIG_MASS)
 ROCK_START_VELOCITY = (0,2)
-ROCK_LOWER_GAUSS_X = -1000
-ROCK_UPPER_GAUSS_X = 2000
-ROCK_LOWER_GAUSS_Y = -1000
-ROCK_UPPER_GAUSS_Y = 2000
-
-# Set how many screens the map consists of
-map_size_width = 7
-map_size_height = 7
+ROCK_LOWER_GAUSS_X = -3000
+ROCK_UPPER_GAUSS_X = 4000
+ROCK_LOWER_GAUSS_Y = -3000
+ROCK_UPPER_GAUSS_Y = 4000
 
 # Radar coords
 RADAR_REDUCTION = .04
