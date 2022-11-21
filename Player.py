@@ -36,7 +36,7 @@ from ThrustSprite import ThrustSprite
 class Player(Alien):
     """This is the player sprite"""
     def __init__(self, mass, size):
-        super(Player,self).__init__(1, mass, size, [0,0], [0,0], PLAYER_IMAGE_LOCATOIN, "GREEN")
+        super(Player,self).__init__(0, mass, size, [0,0], [0,0], PLAYER_IMAGE_LOCATOIN, "GREEN")
 
         self.percent_ejection = .003
 
