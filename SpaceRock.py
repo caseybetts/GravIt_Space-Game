@@ -97,7 +97,6 @@ class SpaceRock(pygame.sprite.Sprite):
             self.rect = self.surface.get_rect( center = (self.rect.x, self.rect.y) )
             self.radius = self.rect.width * .6
 
-
     def display(self, screen, screen_col, screen_row, win_width, win_height):
 
         # Blit the space rock to the screen
@@ -105,15 +104,18 @@ class SpaceRock(pygame.sprite.Sprite):
                         self.rect.left + (-screen_col*win_width),
                         self.rect.top + (-screen_row*win_height)])
 
-        # Blit the radar point to the screen
-        # if screen_col
-        pygame.draw.rect(
-                        screen,
-                        self.radar_point_color,
-                        (self.radar_point_position[0],
-                          self.radar_point_position[1],
-                          self.radar_point_size,
-                          self.radar_point_size))
+
+        # If screen_col and row are on the map
+        if self.screen_col > -floor(MAP_SIZE_WIDTH/2)-1 and self.screen_col < floor(MAP_SIZE_WIDTH/2)+1:
+            if self.screen_row > -floor(MAP_SIZE_HEIGHT/2)-1 and self.screen_row < floor(MAP_SIZE_HEIGHT/2)+1:
+                # Blit the radar point to the screen
+                pygame.draw.rect(
+                                screen,
+                                self.radar_point_color,
+                                (self.radar_point_position[0],
+                                  self.radar_point_position[1],
+                                  self.radar_point_size,
+                                  self.radar_point_size))
 
     def update(self, all_sprites, map_rect, screen, screen_col, screen_row, win_width, win_height, radar_rect):
 

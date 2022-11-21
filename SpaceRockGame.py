@@ -116,19 +116,16 @@ class Space_Rock_Program():
 
         # Set parameters for each level
         if self.game_level == 1:
-            self.number_of_rocks = 90
             self.win_mass = 6e15
             self.brown_space_rock_set = LEVEL_1_BROWN_SET
             self.grey_space_rock_set = LEVEL_1_GREY_SET
             self.enemy_specs = LEVEL_1_ENEMY_SPECS
         elif self.game_level == 2:
-            self.number_of_rocks = 50
             self.win_mass = 10e15
             self.brown_space_rock_set = LEVEL_2_BROWN_SET
             self.grey_space_rock_set = LEVEL_2_GREY_SET
             self.enemy_specs = LEVEL_2_ENEMY_SPECS
         elif self.game_level == 3:
-            self.number_of_rocks = 20
             self.win_mass = 14e15
             self.brown_space_rock_set = LEVEL_3_BROWN_SET
             self.grey_space_rock_set = LEVEL_3_GREY_SET
@@ -502,7 +499,8 @@ class Space_Rock_Program():
         self.screen.blit(percent_ejection_label_surf, (15, (self.win_height/4)-150))
         self.screen.blit(percent_ejection_surf,(15,(self.win_height/4)-100))
 
-        # Display the current mass of the player
+        # Display the current mass of the player and remaining rocks
+        self.number_of_rocks = len(self.all_rocks)
         disp_mass = exponent_split(self.blob.mass)
         mass_text_surf = self.font.render(
                                     'Current Mass: {mass} e {disp_mass} kg              Space Rocks Remaining: {remaining_rocks}'.format(mass=round(disp_mass[0],2),disp_mass=disp_mass[1],remaining_rocks=self.remaining_rocks),
