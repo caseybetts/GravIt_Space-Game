@@ -60,6 +60,13 @@ class Alien(pygame.sprite.Sprite):
     def display(self, screen, player_row, player_col, win_width, win_height):
         """ Displays the sprite on the screen"""
 
+        # Adjust the effective player column and row if the player goes off the map
+        if player_col < MAP_MIN_COL: player_col = MAP_MIN_COL
+        elif player_col > MAP_MAX_COL: player_col = MAP_MAX_COL
+
+        if player_row < MAP_MIN_ROW: player_row = MAP_MIN_ROW
+        elif player_row > MAP_MAX_ROW: player_row = MAP_MAX_ROW
+
         # Determing if the sprite is on the same screen as the player
         if self.screen_row == player_row and self.screen_col == player_col:
             # Blit the sprite to the screen

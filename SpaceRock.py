@@ -74,7 +74,7 @@ class SpaceRock(pygame.sprite.Sprite):
         self.radar_point_position = [0,0]
         self.radar_point_color = 'Red'
         self.radar_point_size = 2
-        self.on_map_flag = True 
+        self.on_map_flag = True
 
         # Collision parameters
         self.collision_force = [0,0]
@@ -98,17 +98,24 @@ class SpaceRock(pygame.sprite.Sprite):
             self.rect = self.surface.get_rect( center = (self.rect.x, self.rect.y) )
             self.radius = self.rect.width * .6
 
-    def display(self, screen, screen_col, screen_row, win_width, win_height):
+    def display(self, screen, player_col, player_row, win_width, win_height):
+
+        # Adjust the effective player column and row if the player goes off the map
+        if player_col < MAP_MIN_COL: player_col = MAP_MIN_COL
+        elif player_col > MAP_MAX_COL: player_col = MAP_MAX_COL
+
+        if player_row < MAP_MIN_ROW: player_row = MAP_MIN_ROW
+        elif player_row > MAP_MAX_ROW: player_row = MAP_MAX_ROW
 
         # Blit the space rock to the screen
         screen.blit(self.surface,[
-                        self.rect.left + (-screen_col*win_width),
-                        self.rect.top + (-screen_row*win_height)])
+                        self.rect.left + (-player_col*win_width),
+                        self.rect.top + (-player_row*win_height)])
 
 
         # If screen_col and row are on the map
-        if self.screen_col > -floor(MAP_SIZE_WIDTH/2)-1 and self.screen_col < floor(MAP_SIZE_WIDTH/2)+1:
-            if self.screen_row > -floor(MAP_SIZE_HEIGHT/2)-1 and self.screen_row < floor(MAP_SIZE_HEIGHT/2)+1:
+        if self.screen_col >= MAP_MIN_COL and self.screen_col <= MAP_MAX_COL:
+            if self.screen_row >= MAP_MIN_ROW and self.screen_row <= MAP_MAX_ROW:
                 # Blit the radar point to the screen
                 pygame.draw.rect(
                                 screen,
@@ -118,7 +125,7 @@ class SpaceRock(pygame.sprite.Sprite):
                                   self.radar_point_size,
                                   self.radar_point_size))
 
-    def update(self, all_sprites, map_rect, screen, screen_col, screen_row, win_width, win_height, radar_rect):
+    def update(self, all_sprites, map_rect, screen, player_col, player_row, win_width, win_height, radar_rect):
 
         # Update screen row and column
         self.screen_col = floor(self.rect.centerx / win_width)
@@ -160,9 +167,9 @@ class SpaceRock(pygame.sprite.Sprite):
         # Remove space rock if it gets too far away
         if self.on_map_flag == False:
 
-            if fabs(self.rect.centerx - map_rect.centerx) > map_rect.width/2 + win_width:
+            if self.screen_col < MAP_MIN_COL-1 or self.screen_col > MAP_MAX_COL+1:
                 self.kill()
-            elif fabs(self.rect.centery - map_rect.centery) > map_rect.height/2 + win_height:
+            elif self.screen_row < MAP_MIN_ROW-1 or self.screen_row > MAP_MAX_ROW+1:
                 self.kill()
 
         # Update the radar point
@@ -177,4 +184,4 @@ class SpaceRock(pygame.sprite.Sprite):
         self.collision_force = [0,0]
 
         # Blit the space rock to the screen
-        self.display(screen, screen_col, screen_row, win_width, win_height)
+        self.display(screen, player_col, player_row, win_width, win_height)

@@ -30,7 +30,7 @@ ENEMY_MASS = 1e15
 ENEMY_PERCENT_EJECTION = .007
 ENEMY_TOP_SPEED = 5
 ENEMY_STEALING_AMMOUNT = 5e12
-LEVEL_1_ENEMY_SPECS = [[0, 1e15, 40]] # quantity, mass, size
+LEVEL_1_ENEMY_SPECS = [[2, 1e15, 40]] # quantity, mass, size
 LEVEL_2_ENEMY_SPECS = [[2, 1e15, 20]] # quantity, mass, size
 LEVEL_3_ENEMY_SPECS = [[1, 1e15, 20]] # quantity, mass, size
 
