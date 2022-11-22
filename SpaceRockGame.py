@@ -108,6 +108,7 @@ class Space_Rock_Program():
         self.number_of_rocks = 0
         self.space_rock_set = []
         self.colliding_enemies = 1
+        self.screen_position = [0,0]
 
     def set_level_parameters(self):
 
@@ -474,21 +475,34 @@ class Space_Rock_Program():
         # Blit the radar screen on the window
         self.screen.blit(self.radar_screen,(self.radar_rect.left,self.radar_rect.top))
 
+        # Set the map x and y to the upper left corner of the screen with the player on it
+        map_x = self.blob.screen_col*self.win_width
+        map_y = self.blob.screen_row*self.win_height
+
+        # Adjust the map position of the screen within the map if the player is off the map
+        if not self.blob.on_map_flag:
+
+            if self.blob.screen_col < MAP_MIN_COL: map_x = MAP_MIN_COL*self.win_width
+            elif self.blob.screen_col > MAP_MAX_COL: map_x = MAP_MAX_COL*self.win_width
+
+            if self.blob.screen_row < MAP_MIN_ROW: map_y = MAP_MIN_ROW*self.win_height
+            elif self.blob.screen_row > MAP_MAX_ROW: map_y = MAP_MAX_ROW*self.win_height
+
         # Calculate the display position of the shadow of the active screen on the radar
-        screen_position = radar_coord_conversion(
-                                    self.blob.screen_col*self.win_width,
-                                    self.blob.screen_row*self.win_height,
-                                    RADAR_REDUCTION,
-                                    self.radar_rect,
-                                    self.map_rect
-                                    )
+        self.screen_position = radar_coord_conversion(
+                                        map_x,
+                                        map_y,
+                                        RADAR_REDUCTION,
+                                        self.radar_rect,
+                                        self.map_rect
+                                        )
 
         # Draw the shadow of the active screen on the radar screen
         pygame.draw.rect(
                         self.screen,
                         (40,40,40),
-                        (   screen_position[0],
-                            screen_position[1],
+                        (   self.screen_position[0],
+                            self.screen_position[1],
                             self.win_width*RADAR_REDUCTION,
                             self.win_height*RADAR_REDUCTION)
                         )

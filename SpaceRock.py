@@ -10,7 +10,7 @@ from Calculations import (
                     radar_coord_conversion
                     )
 from config import *
-from math import floor
+from math import floor, fabs
 from pygame.locals import RLEACCEL
 
 
@@ -74,6 +74,7 @@ class SpaceRock(pygame.sprite.Sprite):
         self.radar_point_position = [0,0]
         self.radar_point_color = 'Red'
         self.radar_point_size = 2
+        self.on_map_flag = True 
 
         # Collision parameters
         self.collision_force = [0,0]
@@ -150,11 +151,19 @@ class SpaceRock(pygame.sprite.Sprite):
         # Update the rectangle coordinates
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
+        # Update the on map flag
+        if pygame.Rect.contains(map_rect, self.rect):
+            self.on_map_flag = True
+        else:
+            self.on_map_flag = False
+
         # Remove space rock if it gets too far away
-        if self.screen_col < -floor(MAP_SIZE_WIDTH/2)-1 or self.screen_col > floor(MAP_SIZE_WIDTH/2)+1:
-            self.kill()
-        if self.screen_row < -floor(MAP_SIZE_HEIGHT/2)-1 or self.screen_row > floor(MAP_SIZE_HEIGHT/2)+1:
-            self.kill()
+        if self.on_map_flag == False:
+
+            if fabs(self.rect.centerx - map_rect.centerx) > map_rect.width/2 + win_width:
+                self.kill()
+            elif fabs(self.rect.centery - map_rect.centery) > map_rect.height/2 + win_height:
+                self.kill()
 
         # Update the radar point
         self.radar_point_position = radar_coord_conversion(

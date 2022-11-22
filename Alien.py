@@ -50,6 +50,7 @@ class Alien(pygame.sprite.Sprite):
         self.radar_point_size = 2
         self.screen_row = 0
         self.screen_col = 0
+        self.on_map_flag = True
 
         # Collision parameters
         self.colliding_enemies = []
@@ -123,6 +124,12 @@ class Alien(pygame.sprite.Sprite):
         # Update screen row and column
         self.screen_col = floor(self.rect.centerx / win_width)
         self.screen_row = floor(self.rect.centery / win_height)
+
+        # Update the on map flag
+        if pygame.Rect.contains(map_rect, self.rect):
+            self.on_map_flag = True
+        else:
+            self.on_map_flag = False
 
         # Update the radar point
         self.radar_point_position = radar_coord_conversion(

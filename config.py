@@ -1,5 +1,7 @@
 # This is a configuration file for SpaceRockGame.py
 
+from math import ceil, floor
+
 # Screen parameters
 framerate = 35
 
@@ -42,6 +44,14 @@ BOUNCE_SLOW_PERCENT = .5
 MAP_SIZE_WIDTH = 7
 MAP_SIZE_HEIGHT = 7
 
+# Min and Max for the map rows and columns
+MAP_MIN_COL = ceil(-MAP_SIZE_WIDTH/2)
+MAP_MAX_COL = floor(MAP_SIZE_WIDTH/2)
+MAP_MIN_ROW = ceil(-MAP_SIZE_HEIGHT/2)
+MAP_MAX_ROW = floor(MAP_SIZE_HEIGHT/2)
+
+print(MAP_MIN_COL, MAP_MAX_COL, MAP_MIN_ROW, MAP_MAX_ROW)
+
 # Space Rock parameters
 helper_force =  0
 SMALL_MASS =    1e14
@@ -61,11 +71,11 @@ RADAR_REDUCTION = .04
 # Level parameters
 LEVEL_1_BROWN_SET = [
                 [ 0, "HUGE_MASS"],
-                [30, "BIG_MASS"],
-                [5, "MED_MASS"],
-                [3, "SMALL_MASS"]]
+                [0, "BIG_MASS"],
+                [0, "MED_MASS"],
+                [0, "SMALL_MASS"]]
 LEVEL_1_GREY_SET = [
-                [30, "BIG_MASS"],
+                [1, "BIG_MASS"],
                 [ 0, "MED_MASS"],
                 [ 0, "SMALL_MASS"]]
 
