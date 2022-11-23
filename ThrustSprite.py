@@ -9,7 +9,7 @@ pygame.init()
 class ThrustSprite(pygame.sprite.Sprite):
     """ThrustSprite is a little pixel of mass ejected from the player."""
 
-    def __init__(self, x_pos, y_pos, mass, direction):
+    def __init__(self, x_pos, y_pos, mass, direction, color):
         super(ThrustSprite, self).__init__()
         self.speed = 30
         self.direction = direction
@@ -26,7 +26,7 @@ class ThrustSprite(pygame.sprite.Sprite):
             size = 20
 
         self.surface = pygame.Surface((size,size))
-        self.surface.fill(('Green'))
+        self.surface.fill((color))
         self.rect = self.surface.get_rect( center = (x_pos,y_pos))
 
     def display(self, screen, screen_col, screen_row, win_width, win_height):

@@ -30,9 +30,12 @@ ENEMY_MASS = 1e15
 ENEMY_PERCENT_EJECTION = .007
 ENEMY_TOP_SPEED = 5
 ENEMY_STEALING_AMMOUNT = 5e12
-LEVEL_1_ENEMY_SPECS = [[2, 1e15, 40]] # quantity, mass, size
-LEVEL_2_ENEMY_SPECS = [[2, 1e15, 20]] # quantity, mass, size
+LEVEL_1_ENEMY_SPECS = [[0, 1e15, 40]] # quantity, mass, size
+LEVEL_2_ENEMY_SPECS = [[0, 1e15, 20]] # quantity, mass, size
 LEVEL_3_ENEMY_SPECS = [[1, 1e15, 20]] # quantity, mass, size
+LEVEL_4_ENEMY_SPECS = [[2, 1e15, 20]] # quantity, mass, size
+LEVEL_5_ENEMY_SPECS = [[5, 1e15, 20]] # quantity, mass, size
+LEVEL_6_ENEMY_SPECS = [[1, 1e16, 40]] # quantity, mass, size
 
 # Motion parameters
 thrust_acc = 100000
@@ -95,6 +98,34 @@ LEVEL_3_BROWN_SET = [
                 [10, "MED_MASS"],
                 [10, "SMALL_MASS"]]
 LEVEL_3_GREY_SET = [
+                [10, "BIG_MASS"],
+                [ 5, "MED_MASS"],
+                [ 5, "SMALL_MASS"]]
+
+LEVEL_4_BROWN_SET = [
+                [ 0, "HUGE_MASS"],
+                [20, "BIG_MASS"],
+                [10, "MED_MASS"],
+                [10, "SMALL_MASS"]]
+LEVEL_4_GREY_SET = [
+                [10, "BIG_MASS"],
+                [ 5, "MED_MASS"],
+                [ 5, "SMALL_MASS"]]
+LEVEL_5_BROWN_SET = [
+                [ 0, "HUGE_MASS"],
+                [20, "BIG_MASS"],
+                [10, "MED_MASS"],
+                [10, "SMALL_MASS"]]
+LEVEL_5_GREY_SET = [
+                [10, "BIG_MASS"],
+                [ 5, "MED_MASS"],
+                [ 5, "SMALL_MASS"]]
+LEVEL_6_BROWN_SET = [
+                [ 0, "HUGE_MASS"],
+                [20, "BIG_MASS"],
+                [10, "MED_MASS"],
+                [10, "SMALL_MASS"]]
+LEVEL_6_GREY_SET = [
                 [10, "BIG_MASS"],
                 [ 5, "MED_MASS"],
                 [ 5, "SMALL_MASS"]]

@@ -95,7 +95,7 @@ class Space_Rock_Program():
 
         # Create a level event to start the next level at a given interval
         self.level_timer = pygame.USEREVENT + 1
-        pygame.time.set_timer(self.level_timer, 5000)
+        pygame.time.set_timer(self.level_timer, 100)
 
         # Game level variables
         self.level_won = False
@@ -105,7 +105,6 @@ class Space_Rock_Program():
 
         # Variables
         self.key_down_flag = False
-        self.number_of_rocks = 0
         self.space_rock_set = []
         self.colliding_enemies = 1
         self.screen_position = [0,0]
@@ -122,15 +121,30 @@ class Space_Rock_Program():
             self.grey_space_rock_set = LEVEL_1_GREY_SET
             self.enemy_specs = LEVEL_1_ENEMY_SPECS
         elif self.game_level == 2:
-            self.win_mass = 10e15
+            self.win_mass = 9e15
             self.brown_space_rock_set = LEVEL_2_BROWN_SET
             self.grey_space_rock_set = LEVEL_2_GREY_SET
             self.enemy_specs = LEVEL_2_ENEMY_SPECS
         elif self.game_level == 3:
-            self.win_mass = 14e15
+            self.win_mass = 12e15
             self.brown_space_rock_set = LEVEL_3_BROWN_SET
             self.grey_space_rock_set = LEVEL_3_GREY_SET
             self.enemy_specs = LEVEL_3_ENEMY_SPECS
+        elif self.game_level == 4:
+            self.win_mass = 15e15
+            self.brown_space_rock_set = LEVEL_4_BROWN_SET
+            self.grey_space_rock_set = LEVEL_4_GREY_SET
+            self.enemy_specs = LEVEL_4_ENEMY_SPECS
+        elif self.game_level == 5:
+            self.win_mass = 18e15
+            self.brown_space_rock_set = LEVEL_5_BROWN_SET
+            self.grey_space_rock_set = LEVEL_5_GREY_SET
+            self.enemy_specs = LEVEL_5_ENEMY_SPECS
+        elif self.game_level == 6:
+            self.win_mass = 21e15
+            self.brown_space_rock_set = LEVEL_6_BROWN_SET
+            self.grey_space_rock_set = LEVEL_6_GREY_SET
+            self.enemy_specs = LEVEL_6_ENEMY_SPECS
 
         self.level_text_count = 100
 
@@ -138,23 +152,52 @@ class Space_Rock_Program():
 
     def release_space_rocks(self):
 
-        rock_id = 0
-        # Find the highest rock id
-        for rock in self.all_rocks:
-            if rock.id > rock_id:
-                rock_id = rock.id
+        # Randomize if the rock is released or not
+        release_flag = random.choice([1,2,3,4])
 
-        if self.game_level == 1:
-            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Brown", .5*self.win_width, -4*self.win_height, 0, 2)
-            self.brown_rocks.add(rock)
-            self.all_rocks.add(rock)
-            self.all_sprites.add(rock)
+        if release_flag > 0:
 
-        elif self.game_level == 2:
-            rock = SpaceRock((rock_id + 1), "BIG_MASS", "Grey", .5*self.win_width, -4*self.win_height, 0, 2)
-            self.grey_rocks.add(rock)
-            self.all_rocks.add(rock)
-            self.all_sprites.add(rock)
+            rock_id = 0
+            # Find the highest rock id
+            for rock in self.all_rocks:
+                if rock.id > rock_id:
+                    rock_id = rock.id
+
+            # Randomize the rock selection
+            color = random.choice(["Grey", "Brown"])
+            size = random.choice(["SMALL_MASS", "MED_MASS", "BIG_MASS", "HUGE_MASS"])
+            direction = random.choice(['left', 'right', 'top', 'bottom'])
+
+            # Determin a random starting position and velocity based on the direction the rock will come from
+            if direction == 'left':
+                x_position = self.map_left_boundary-self.win_width
+                y_position = random.randint(self.map_top_boundary, self.map_bottom_boundary)
+                x_velocity = 2
+                y_velocity = 0
+            elif direction == 'right':
+                x_position = self.map_right_boundary+self.win_width
+                y_position = random.randint(self.map_top_boundary, self.map_bottom_boundary)
+                x_velocity = -2
+                y_velocity = 0
+            elif direction == 'top':
+                x_position = random.randint(self.map_left_boundary, self.map_right_boundary)
+                y_position = self.map_top_boundary-self.win_height
+                x_velocity = 0
+                y_velocity = 2
+            else:
+                x_position = random.randint(self.map_left_boundary, self.map_right_boundary)
+                y_position = self.map_bottom_boundary+self.win_height
+                x_velocity = 0
+                y_velocity = -2
+
+            if self.game_level == 1:
+                rock = SpaceRock((rock_id + 1), size, color, x_position, y_position, x_velocity, y_velocity)
+                self.all_rocks.add(rock)
+                self.all_sprites.add(rock)
+                if color == "Brown":
+                    self.brown_rocks.add(rock)
+                else:
+                    self.grey_rocks.add(rock)
 
     def release_enemies(self):
         pass
@@ -514,7 +557,7 @@ class Space_Rock_Program():
         self.screen.blit(percent_ejection_surf,(15,(self.win_height/4)-100))
 
         # Display the current mass of the player and remaining rocks
-        self.number_of_rocks = len(self.all_rocks)
+        self.remaining_rocks = len(self.all_rocks)
         disp_mass = exponent_split(self.blob.mass)
         mass_text_surf = self.font.render(
                                     'Current Mass: {mass} e {disp_mass} kg              Space Rocks Remaining: {remaining_rocks}'.format(mass=round(disp_mass[0],2),disp_mass=disp_mass[1],remaining_rocks=self.remaining_rocks),
@@ -605,8 +648,7 @@ class Space_Rock_Program():
                     self.key_down_flag = False
 
                 elif event.type == self.level_timer:
-                    print("level timer")
-                    # Increase the level and release the next wave
+                    # Release another round of space rocks
                     self.release_space_rocks()
                     self.release_enemies()
 
@@ -771,7 +813,7 @@ class Space_Rock_Program():
         while self.game_level > -1:
 
             # Run level
-            if self.game_level > 3:
+            if self.game_level > 6:
                 self.win_loop()
 
             elif self.game_level > 0:

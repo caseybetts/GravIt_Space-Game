@@ -43,7 +43,7 @@ class Player(Alien):
     def thrust(self, direction):
 
         # Create a new thrust sprite and add it to the group
-        ejected = ThrustSprite(self.rect.centerx,self.rect.centery,self.mass,direction)
+        ejected = ThrustSprite(self.rect.centerx, self.rect.centery, self.mass, direction, "Green")
         self.thrust_group.add(ejected)
 
         # Update the mass

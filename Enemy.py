@@ -144,7 +144,7 @@ class Enemy(Alien):
         for direction in self.thrust_direction:
             if direction != 'None':
                 # Create a sprite for a visual depiction of the mass ejection
-                ejected = ThrustSprite(self.rect.centerx,self.rect.centery,self.mass,direction)
+                ejected = ThrustSprite(self.rect.centerx, self.rect.centery, self.mass, direction, "Yellow")
                 self.thrust_group.add(ejected)
 
                 # Update the mass of the enemy
