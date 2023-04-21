@@ -6,7 +6,7 @@ from math import ceil, floor
 framerate = 35
 
 # Sound
-music_on = False
+music_on = True
 background_music_location = "audio/background_music.wav"
 button_sound_location = "audio/button-gong-sabi.wav"
 THRUST_SOUND_LOCATION = "audio/thrust.flac"
@@ -35,7 +35,7 @@ LEVEL_2_ENEMY_SPECS = [[0, 1e15, 20]] # quantity, mass, size
 LEVEL_3_ENEMY_SPECS = [[1, 1e15, 20]] # quantity, mass, size
 LEVEL_4_ENEMY_SPECS = [[2, 1e15, 20]] # quantity, mass, size
 LEVEL_5_ENEMY_SPECS = [[5, 1e15, 20]] # quantity, mass, size
-LEVEL_6_ENEMY_SPECS = [[1, 1e16, 40]] # quantity, mass, size
+LEVEL_6_ENEMY_SPECS = [[2, 1e16, 40]] # quantity, mass, size
 
 # Motion parameters
 thrust_acc = 100000
@@ -74,11 +74,11 @@ RADAR_REDUCTION = .04
 # Level parameters
 LEVEL_1_BROWN_SET = [
                 [ 0, "HUGE_MASS"],
-                [0, "BIG_MASS"],
+                [50, "BIG_MASS"],
                 [0, "MED_MASS"],
                 [0, "SMALL_MASS"]]
 LEVEL_1_GREY_SET = [
-                [1, "BIG_MASS"],
+                [0, "BIG_MASS"],
                 [ 0, "MED_MASS"],
                 [ 0, "SMALL_MASS"]]
 
@@ -93,7 +93,7 @@ LEVEL_2_GREY_SET = [
                 [ 5, "SMALL_MASS"]]
 
 LEVEL_3_BROWN_SET = [
-                [ 0, "HUGE_MASS"],
+                [ 2, "HUGE_MASS"],
                 [20, "BIG_MASS"],
                 [10, "MED_MASS"],
                 [10, "SMALL_MASS"]]
@@ -103,29 +103,29 @@ LEVEL_3_GREY_SET = [
                 [ 5, "SMALL_MASS"]]
 
 LEVEL_4_BROWN_SET = [
-                [ 0, "HUGE_MASS"],
-                [20, "BIG_MASS"],
-                [10, "MED_MASS"],
+                [ 2, "HUGE_MASS"],
+                [15, "BIG_MASS"],
+                [7, "MED_MASS"],
                 [10, "SMALL_MASS"]]
 LEVEL_4_GREY_SET = [
                 [10, "BIG_MASS"],
                 [ 5, "MED_MASS"],
                 [ 5, "SMALL_MASS"]]
 LEVEL_5_BROWN_SET = [
-                [ 0, "HUGE_MASS"],
-                [20, "BIG_MASS"],
-                [10, "MED_MASS"],
+                [ 2, "HUGE_MASS"],
+                [10, "BIG_MASS"],
+                [5, "MED_MASS"],
                 [10, "SMALL_MASS"]]
 LEVEL_5_GREY_SET = [
                 [10, "BIG_MASS"],
                 [ 5, "MED_MASS"],
                 [ 5, "SMALL_MASS"]]
 LEVEL_6_BROWN_SET = [
-                [ 0, "HUGE_MASS"],
-                [20, "BIG_MASS"],
-                [10, "MED_MASS"],
-                [10, "SMALL_MASS"]]
+                [ 3, "HUGE_MASS"],
+                [5, "BIG_MASS"],
+                [5, "MED_MASS"],
+                [5, "SMALL_MASS"]]
 LEVEL_6_GREY_SET = [
-                [10, "BIG_MASS"],
+                [5, "BIG_MASS"],
                 [ 5, "MED_MASS"],
                 [ 5, "SMALL_MASS"]]

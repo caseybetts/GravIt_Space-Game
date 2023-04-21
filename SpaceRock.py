@@ -155,6 +155,7 @@ class SpaceRock(pygame.sprite.Sprite):
         self.velocity[0] += acceleration_x
         self.velocity[1] += acceleration_y
 
+        #print("Rock", self.id, "Displacement:", self.velocity[0], self.velocity[1])
         # Update the rectangle coordinates
         self.rect.move_ip(self.velocity[0],self.velocity[1])
 
