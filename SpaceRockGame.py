@@ -351,52 +351,36 @@ class Space_Rock_Program():
         # Eliminate the entries where a rock is only colliding with itself
         brown_collisions = {rock:collisions for (rock,collisions) in brown_collisions.items() if len(collisions) > 1}
 
-        for rock in brown_collisions:
-            # For every brown rock that is currently in the colliding list (this is every rock since it counts collisions with itself, but we handle that next)
+        # For every rock that is currently in the colliding list assess each rock colliding with it
+        for target_rock in brown_collisions:
 
-            for sprite in brown_collisions[rock]:
-                # For each rock in the collision list for this rock (Again this will include itself)
+            # For each rock colliding with the target rock assess and update
+            for colliding_rock in brown_collisions[target_rock]:
+                
+                # Ignore the case of the rock colliding with itself
+                if target_rock.id == colliding_rock.id:
+                    break
+                
+                # Determine if they are moving slowly relative to eachother and should be combined into one rock
+                if abs(colliding_rock.velocity[0] - target_rock.velocity[0]) < 1 and abs(colliding_rock.velocity[1] - target_rock.velocity[1]) < 1:
+                    
+                    # Change the rock's mass and size
+                    target_rock.mass += colliding_rock.mass
+                    target_rock.change_size()
 
-                if rock.id != sprite.id:
-                    # If the collision rock is not itself
+                    # Ensure the pair of rocks are only addressed once and remove it
+                    brown_collisions[colliding_rock] = []
+                    colliding_rock.kill()
 
-                    if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
-                        # Determine if they are moving together
+                    # Update the total number of rocks to reflect the combination
+                    self.remaining_rocks -= 1
 
-                        if rock.mass >= sprite.mass:
-                            # Choose the larger of the two rocks to keep
-
-                            rock.mass += sprite.mass
-                            rock.change_size()
-
-                            # Ensure the pair of rocks are only addressed once
-                            brown_collisions[sprite] = []
-
-                            # Kill the smaller space rock
-                            sprite.kill()
-
-                            # Update the total number of rocks to reflect the combination
-                            self.remaining_rocks -= 1
-                        else:
-                            # Choose the larger of the two rocks to keep
-
-                            sprite.mass += rock.mass
-                            sprite.change_size()
-
-                            # Ensure the pair of rocks are only addressed once
-                            brown_collisions[sprite] = []
-
-                            # Kill the smaller space rock
-                            rock.kill()
-
-                            # Update the total number of rocks to reflect the combination
-                            self.remaining_rocks -= 1
-
-                    else:
-                        sprite.velocity[0] *= collision_slow_percent
-                        sprite.velocity[1] *= collision_slow_percent
-                        rock.velocity[0] *= collision_slow_percent
-                        rock.velocity[1] *= collision_slow_percent
+                # Otherwise change both rock's velocities 
+                else:
+                    colliding_rock.velocity[0] *= collision_slow_percent
+                    colliding_rock.velocity[1] *= collision_slow_percent
+                    target_rock.velocity[0] *= collision_slow_percent
+                    target_rock.velocity[1] *= collision_slow_percent
 
         ############# GREY ROCKS AND GREY ROCKS #############
         # Get collided sprites
@@ -405,50 +389,36 @@ class Space_Rock_Program():
         # Eliminate the entries where a rock is only colliding with itself
         grey_collisions = {rock:collisions for (rock,collisions) in grey_collisions.items() if len(collisions) > 1}
 
-        for rock in grey_collisions:
-            # For every grey rock that is currently in the colliding list
+        # For every rock that is currently in the colliding list assess each rock colliding with it
+        for target_rock in grey_collisions:
+            
+            # For each rock colliding with the target rock assess and update
+            for colliding_rock in grey_collisions[target_rock]:
 
-            for sprite in grey_collisions[rock]:
+                # Ignore the case of the rock colliding with itself
+                if target_rock.id == colliding_rock.id:
+                    break
+                
+                # Determine if they are moving slowly relative to eachother and should be combined into one rock
+                if abs(colliding_rock.velocity[0] - target_rock.velocity[0]) < 1 and abs(colliding_rock.velocity[1] - target_rock.velocity[1]) < 1:
+                    
+                    # Change the rock's mass and size
+                    target_rock.mass += colliding_rock.mass
+                    target_rock.change_size()
 
-                if rock.id != sprite.id:
+                    # Ensure the pair of rocks are only addressed once and remove it
+                    grey_collisions[colliding_rock] = []
+                    colliding_rock.kill()
 
-                    if abs(sprite.velocity[0] - rock.velocity[0]) < 1 and abs(sprite.velocity[1] - rock.velocity[1]) < 1:
-                        # Determine if they are moving together
+                    # Update the total number of rocks to reflect the combination
+                    self.remaining_rocks -= 1
 
-                        if rock.mass >= sprite.mass:
-                            # Choose the larger of the two rocks to keep
-
-                            rock.mass += sprite.mass
-                            rock.change_size()
-
-                            # Ensure the pair of rocks are only addressed once
-                            grey_collisions[sprite] = []
-
-                            # Kill the smaller space rock
-                            sprite.kill()
-
-                            # Update the total number of rocks to reflect the combination
-                            self.remaining_rocks -= 1
-                        else:
-                            # Choose the larger of the two rocks to keep
-
-                            sprite.mass += rock.mass
-                            sprite.change_size()
-
-                            # Ensure the pair of rocks are only addressed once
-                            grey_collisions[sprite] = []
-
-                            # Kill the smaller space rock
-                            rock.kill()
-
-                            # Update the total number of rocks to reflect the combination
-                            self.remaining_rocks -= 1
-
-                    else:
-                        sprite.velocity[0] *= collision_slow_percent
-                        sprite.velocity[1] *= collision_slow_percent
-                        rock.velocity[0] *= collision_slow_percent
-                        rock.velocity[1] *= collision_slow_percent
+                # Otherwise change both rock's velocities 
+                else:
+                    colliding_rock.velocity[0] *= collision_slow_percent
+                    colliding_rock.velocity[1] *= collision_slow_percent
+                    target_rock.velocity[0] *= collision_slow_percent
+                    target_rock.velocity[1] *= collision_slow_percent
 
 
         ############# BROWN ROCKS AND GREY ROCKS #############

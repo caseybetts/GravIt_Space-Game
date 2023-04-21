@@ -73,12 +73,12 @@ RADAR_REDUCTION = .04
 
 # Level parameters
 LEVEL_1_BROWN_SET = [
-                [ 0, "HUGE_MASS"],
-                [50, "BIG_MASS"],
+                [0, "HUGE_MASS"],
+                [0, "BIG_MASS"],
                 [0, "MED_MASS"],
                 [0, "SMALL_MASS"]]
 LEVEL_1_GREY_SET = [
-                [0, "BIG_MASS"],
+                [50, "BIG_MASS"],
                 [ 0, "MED_MASS"],
                 [ 0, "SMALL_MASS"]]
 
